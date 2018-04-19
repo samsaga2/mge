@@ -1,0 +1,9 @@
+sub init
+    image "blob.png"
+    color 5
+    pos (100, 100)
+endsub
+
+sub update
+    move (-1, 1)
+endsub

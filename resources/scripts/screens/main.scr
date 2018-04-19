@@ -1,0 +1,4 @@
+sub init
+    new sprite "skeleton.scr"
+    new sprite "blob.scr"
+endsub
