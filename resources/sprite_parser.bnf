@@ -1,4 +1,5 @@
 prog = (<nl>|<ws>)? sub (<nl> sub)* (<nl>|<ws>)?
+<ops> = (<nl> sub)*
 
 nl = #'[\n\r]+'
 ws = #'\s+'
@@ -7,11 +8,17 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? sprite-ops <nl>
+<op> = <ws>? (sprite-ops|if-ops) <nl>+
 <argcoord> = <'('> <ws>? num <ws>? <','> <ws>? num <ws>? <')'>
+<argstr> = <'('> <ws>? str <ws>? <')'>
 
 <sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color)
 sprite-pos = <'pos'> <ws> argcoord
 sprite-image = <'image'> <ws> str
 sprite-move = <'move'> <ws> argcoord
 sprite-color = <'color'> <ws> num
+
+if-ops = (<'if'> <ws> if-keydown <ws> <'then'> <nl> <ws>? then)
+then = op* <ws>? (<'endif'>|else)
+else = <'else'> op* <ws>? <'endif'>
+if-keydown = <'keydown'> <ws>? argstr

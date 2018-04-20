@@ -1,5 +1,8 @@
 (ns mge.script-ir
-  (:require [mge.sprites :as spr]))
+  (:require [mge.sprites :as spr]
+            [mge.keys :as keys]
+            [clj-z80.asm :refer :all :refer-macros :all]
+            [clojure.string :as str]))
 
 (defn end
   []
@@ -34,3 +37,23 @@
 (defn sprite-color
   [n]
   [[:ld [:ix spr/+spr-color+] n]])
+
+(defn if-keydown
+  ([keyname then]
+   (let [keyname (str/trim (str/upper-case keyname))
+         endif   (keyword (gensym))]
+     (concat [(keys/key-pressed? keyname)
+              [:jp :nz endif]]
+             then
+             [(label endif)])))
+  ([keyname then else]
+   (let [keyname (str/trim (str/upper-case keyname))
+         lelse   (keyword (gensym))
+         lendif  (keyword (gensym))]
+     (concat [(keys/key-pressed? keyname)
+              [:jp :nz lelse]]
+             then
+             [[:jp lendif]
+              (label lelse)]
+             else
+             [(label lendif)]))))

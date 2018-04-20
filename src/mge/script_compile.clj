@@ -25,6 +25,8 @@
 
 ;; ops
 
+(declare compile-ops)
+
 (defn- compile-sprite-ops
   [op]
   (match op
@@ -51,23 +53,35 @@
 
          :else nil))
 
+(defn- compile-if-ops
+  [op]
+  (match op
+         [:if-ops [:if-keydown [:str key]] [:then & then]]
+         (if (= (some-> then last first) :else)
+           (let [else (rest (last then))
+                 then (drop-last then)]
+             [(if-keydown key
+                          (compile-ops then)
+                          (compile-ops else))])
+           [(if-keydown key (compile-ops then))])))
+
 (defn- compile-op
   [op]
   (apply concat (or (compile-sprite-ops op)
                     (compile-new-ops op)
+                    (compile-if-ops op)
                     (throw (Exception. (str "Uknown func " op))))))
 
 (defn- compile-ops
   [ops]
-  (apply concat
-         (mapcat compile-op ops)
-         [(end)]))
+  (mapcat compile-op ops))
 
 (defn- compile-sub
   [sub]
   (match sub
          [:sub id & ops]
-         [(keyword id) (compile-ops ops)]))
+         [(keyword id) (concat (compile-ops ops)
+                               [(end)])]))
 
 
 ;; screen scripts
@@ -96,3 +110,5 @@
     (match p
            [:prog & subs]
            (into {} (map compile-sub subs)))))
+
+(clojure.pprint/pprint (:update (compile-sprite-script (slurp (io/resource "scripts/sprites/skeleton.scr")))))
