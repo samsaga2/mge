@@ -1,12 +1,14 @@
 sub init
     image "blob.png"
     color 5
-    pos (100, 100)
+    type 2
+    pos (120, 100)
 endsub
 
 sub update
-    move (-2, 1)
-    if y > 176 then
-       pos (100, 100)
+    if collide(1) then
+      color 6
+    else
+      color 5
     endif
 endsub

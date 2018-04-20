@@ -7,15 +7,12 @@
 
 
 ;; sprite struct
-(def +spr-state+ 0)
+(def +spr-type+ 0)
 (def +spr-x+ 1)
 (def +spr-y+ 2)
 (def +spr-color+ 3)
-
-;; sprite state field
-(def +state-unused+ 0)
-(def +state-visible+ 1)
-(def +state-hidden+ 2)
+(def +spr-w+ 4)
+(def +spr-h+ 5)
 
 ;; sprites data
 (def +sprites-count+ 32)
@@ -39,7 +36,9 @@
   [:ld :de +varsprites-count+]
   [:ld :b 32]
   (label :loop
-         [:ld [:ix +spr-x+] 212]
+         [:ld [:ix +spr-y+] 212]
+         [:ld [:ix +spr-w+] 8]
+         [:ld [:ix +spr-h+] 8]
          [:add :ix :de]
          [:djnz :loop])
   [:ret])
@@ -52,6 +51,7 @@
   [:ld :bc 32]
   [:ld :a 0]
   (label :loop
+         [:ld [:hl] 212]
          [:inc :hl]
          [:inc :hl]
          [:ld [:hl] :a]                 ; spr pattern
@@ -132,6 +132,8 @@
          [:dec :hl]
          [:ld [:hl] :e]
          [:pop :hl]                     ; call init
+         [:ld [:ix +spr-w+] 8]
+         [:ld [:ix +spr-h+] 8]
          [:call u/call-hl]
          [:pop :af]                     ; restore selected
          [:ld [spr-selected] :a]
@@ -190,6 +192,118 @@
                 [:ld :de +varsprites-count+]
                 [:add :ix :de]
                 [:djnz :loop]))
+  [:ret])
+
+
+;; collision
+
+(defasmword check-y1)
+(defasmword check-y2)
+(defasmword check-x1)
+(defasmword check-x2)
+(defasmword check-w)
+(defasmword check-h)
+
+;; a=1 if distance (x1,y1) to (x2,y2) < (w,h)
+(defasmproc check-collision {:page :code}
+  [:xor :a]
+  ;; check y
+  (label :check-y
+         [:ld :hl [check-y1]]
+         [:ld :de [check-y2]]
+         [:or :a]
+         [:sbc :hl :de]
+         [:jp :c :swapy]
+         [:ld :de [check-h]]
+         [:call u/negate-de]
+         [:add :hl :de]
+         [:jp :c :no-collision]
+         [:jp :check-x]
+         (label :swapy
+                [:ld :de [check-h]]
+                [:add :hl :de]
+                [:jp :nc :no-collision]))
+  (label :check-x
+         [:ld :hl [check-x1]]
+         [:ld :de [check-x2]]
+         [:or :a]
+         [:sbc :hl :de]
+         [:jp :c :swapx]
+         [:ld :de [check-w]]
+         [:call u/negate-de]
+         [:add :hl :de]
+         [:jp :c :no-collision]
+         [:jp :collision]
+         (label :swapx
+                [:ld :de [check-w]]
+                [:add :hl :de]
+                [:jp :nc :no-collision]))
+  (label :collision
+         [:ld :a 1]
+         [:or :a]
+         [:ret])
+  (label :no-collision
+         [:xor :a]
+         [:ret]))
+
+(defasmproc collide {:page :code}
+  [:ld :hl 0]
+  [:ld [check-x1] :hl]
+  [:ld [check-x2] :hl]
+  [:ld [check-y1] :hl]
+  [:ld [check-y2] :hl]
+  [:ld [check-w] :hl]
+  [:ld [check-h] :hl]
+  [:ld :c :a]
+  [:ld :hl table]
+  [:ld :b +sprites-count+]
+  [:ld :iy data]
+  (label :loop
+         ;; get update addr
+         [:inc :hl]
+         [:ld :d [:hl]]
+         [:inc :hl]
+
+         [:ld :a :d]
+         [:or :a]
+         [:jp :z :next]
+
+         ;; check type
+         [:ld :a [:iy +spr-type+]]
+         [:cp :c]
+         [:jp :nz :next]
+
+         ;; check collision
+         [:push :hl]
+         [:ld :a [:ix +spr-x+]]         ; x1
+         [:add 8]
+         [:ld [check-x1] :a]
+         [:ld :a [:ix +spr-y+]]         ; y1
+         [:add 8]
+         [:ld [check-y1] :a]
+         [:ld :a [:iy +spr-x+]]         ; x2
+         [:add 8]
+         [:ld [check-x2] :a]
+         [:ld :a [:iy +spr-y+]]         ; y2
+         [:add 8]
+         [:ld [check-y2] :a]
+         [:ld :a [:ix +spr-w+]]         ; w
+         [:add [:iy +spr-w+]]
+         [:ld [check-w] :a]
+         [:ld :a [:ix +spr-h+]]         ; h
+         [:add [:iy +spr-h+]]
+         [:ld [check-h] :a]
+
+         [:call check-collision]
+         [:pop :hl]
+         [:ret :nz]
+
+         (label :next
+                ;; next data
+                [:ld :de +varsprites-count+]
+                [:add :iy :de]
+                [:djnz :loop]))
+  [:xor :a]
   [:ret])
 
 

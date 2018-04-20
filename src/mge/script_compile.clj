@@ -42,6 +42,15 @@
          [:sprite-color [:num n]]
          [(sprite-color (Integer. n))]
 
+         [:sprite-type [:num n]]
+         [(sprite-type (Integer. n))]
+
+         [:sprite-width [:num n]]
+         [(sprite-width (Integer. n))]
+
+         [:sprite-height [:num n]]
+         [(sprite-height (Integer. n))]
+
          :else nil))
 
 (defn- compile-new-ops
@@ -72,7 +81,16 @@
              [(if-cmp id cmp (Integer. n)
                       (compile-ops then)
                       (compile-ops else))])
-           [(if-cmp id cmp (Integer. n) (compile-ops then))])))
+           [(if-cmp id cmp (Integer. n) (compile-ops then))])
+
+         [:if-ops [:if-collide [:num n]] [:then & then]]
+         (if (= (some-> then last first) :else)
+           (let [else (rest (last then))
+                 then (drop-last then)]
+             [(if-collide (Integer. n)
+                          (compile-ops then)
+                          (compile-ops else))])
+           [(if-collide (Integer. n) (compile-ops then))])))
 
 (defn- compile-op
   [op]

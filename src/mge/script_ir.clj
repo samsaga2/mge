@@ -10,9 +10,12 @@
 (defn- get-var-index
   [id]
   (case id
-    "x"     spr/+spr-x+
-    "y"     spr/+spr-y+
-    "color" spr/+spr-color+))
+    "type"   spr/+spr-type+
+    "x"      spr/+spr-x+
+    "y"      spr/+spr-y+
+    "color"  spr/+spr-color+
+    "width"  spr/+spr-w+
+    "height" spr/+spr-h+))
 
 (defn- var-source
   [id]
@@ -72,6 +75,18 @@
   [n]
   [[:ld [:ix spr/+spr-color+] n]])
 
+(defn sprite-type
+  [n]
+  [[:ld [:ix spr/+spr-type+] n]])
+
+(defn sprite-width
+  [n]
+  [[:ld [:ix spr/+spr-w+] n]])
+
+(defn sprite-height
+  [n]
+  [[:ld [:ix spr/+spr-h+] n]])
+
 (defn if-keydown
   ([keyname then]
    (let [keyname (str/trim (str/upper-case keyname))
@@ -102,6 +117,27 @@
    (let [lelse  (keyword (gensym))
          lendif (keyword (gensym))]
      (concat (compare-code id num cmp lelse)
+             then
+             [[:jp lendif]
+              (label lelse)]
+             else
+             [(label lendif)]))))
+
+(defn if-collide
+  ([type then]
+   [[:nop]]
+   (let [lendif (keyword (gensym))]
+     (concat [[:ld :a type]
+              [:call spr/collide]
+              [:jp :z lendif]]
+             then
+             [(label lendif)])))
+  ([type then else]
+   (let [lelse  (keyword (gensym))
+         lendif (keyword (gensym))]
+     (concat [[:ld :a type]
+              [:call spr/collide]
+              [:jp :z lelse]]
              then
              [[:jp lendif]
               (label lelse)]
