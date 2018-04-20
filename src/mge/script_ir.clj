@@ -57,3 +57,32 @@
               (label lelse)]
              else
              [(label lendif)]))))
+
+(defn- get-var-index
+  [id]
+  (case id
+    "x"     spr/+spr-x+
+    "y"     spr/+spr-y+
+    "color" spr/+spr-color+))
+
+(defn if-cmp
+  ([id cmp num then]
+   (let [lendif    (keyword (gensym))
+         var-index (get-var-index id)]
+     (concat (case cmp
+               "<=" [[:ld :a num]
+                     [:cp [:ix var-index]]]
+               [[:ld :a [:ix var-index]]
+                [:cp num]])
+             (case cmp
+               "="  [:jp :nz lendif]
+               "<>" [:jp :z lendif]
+               ">"  [[:jp :z lendif]
+                     [:jp :c lendif]]
+               ">=" [[:jp :c lendif]]
+               "<"  [[:jp :nc lendif]]
+               "<=" [[:jp :c lendif]])
+             then
+             [(label lendif)])))
+  ([id cmp num then else]
+   [[:nop]]))

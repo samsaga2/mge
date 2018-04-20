@@ -18,7 +18,8 @@ sprite-image = <'image'> <ws> str
 sprite-move = <'move'> <ws> argcoord
 sprite-color = <'color'> <ws> num
 
-if-ops = (<'if'> <ws> if-keydown <ws> <'then'> <nl> <ws>? then)
+if-ops = (<'if'> <ws> (if-keydown|if-cmp) <ws> <'then'> <nl> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
 else = <'else'> op* <ws>? <'endif'>
 if-keydown = <'keydown'> <ws>? argstr
+if-cmp = id <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? num

@@ -6,15 +6,23 @@ endsub
 
 sub update
     if keydown("left") then
-       move (-1, 0)
+       if x > 0 then
+         move (-1, 0)
+       endif
     endif
     if keydown("right") then
-       move (1, 0)
+       if x < 239 then
+          move (1, 0)
+       endif
     endif
     if keydown("up") then
-       move (0, -1)
+       if y > 0 then
+          move (0, -1)
+       endif
     endif
     if keydown("down") then
-       move (0, 1)
+       if y < 175 then
+          move (0, 1)
+       endif
     endif
 endsub

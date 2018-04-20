@@ -63,7 +63,16 @@
              [(if-keydown key
                           (compile-ops then)
                           (compile-ops else))])
-           [(if-keydown key (compile-ops then))])))
+           [(if-keydown key (compile-ops then))])
+
+         [:if-ops [:if-cmp id cmp [:num n]] [:then & then]]
+         (if (= (some-> then last first) :else)
+           (let [else (rest (last then))
+                 then (drop-last then)]
+             [(if-cmp id cmp (Integer. n)
+                      (compile-ops then)
+                      (compile-ops else))])
+           [(if-cmp id cmp (Integer. n) (compile-ops then))])))
 
 (defn- compile-op
   [op]
@@ -110,5 +119,3 @@
     (match p
            [:prog & subs]
            (into {} (map compile-sub subs)))))
-
-(clojure.pprint/pprint (:update (compile-sprite-script (slurp (io/resource "scripts/sprites/skeleton.scr")))))
