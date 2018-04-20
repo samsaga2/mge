@@ -4,6 +4,40 @@
             [clj-z80.asm :refer :all :refer-macros :all]
             [clojure.string :as str]))
 
+
+;; util
+
+(defn- get-var-index
+  [id]
+  (case id
+    "x"     spr/+spr-x+
+    "y"     spr/+spr-y+
+    "color" spr/+spr-color+))
+
+(defn- var-source
+  [id]
+  (cond (string? id) [:ix (get-var-index id)]
+        (number? id) id))
+
+(defn- compare-code
+  [i j cmp skip-label]
+  (concat (case cmp
+            "<=" [[:ld :a (var-source j)]
+                  [:cp (var-source i)]]
+            [[:ld :a (var-source i)]
+             [:cp (var-source j)]])
+          (case cmp
+            "="  [:jp :nz skip-label]
+            "<>" [:jp :z skip-label]
+            ">"  [[:jp :z skip-label]
+                  [:jp :c skip-label]]
+            ">=" [[:jp :c skip-label]]
+            "<"  [[:jp :nc skip-label]]
+            "<=" [[:jp :c skip-label]])))
+
+
+;; core
+
 (defn end
   []
   [[:ret]])
@@ -58,31 +92,18 @@
              else
              [(label lendif)]))))
 
-(defn- get-var-index
-  [id]
-  (case id
-    "x"     spr/+spr-x+
-    "y"     spr/+spr-y+
-    "color" spr/+spr-color+))
-
 (defn if-cmp
   ([id cmp num then]
-   (let [lendif    (keyword (gensym))
-         var-index (get-var-index id)]
-     (concat (case cmp
-               "<=" [[:ld :a num]
-                     [:cp [:ix var-index]]]
-               [[:ld :a [:ix var-index]]
-                [:cp num]])
-             (case cmp
-               "="  [:jp :nz lendif]
-               "<>" [:jp :z lendif]
-               ">"  [[:jp :z lendif]
-                     [:jp :c lendif]]
-               ">=" [[:jp :c lendif]]
-               "<"  [[:jp :nc lendif]]
-               "<=" [[:jp :c lendif]])
+   (let [lendif (keyword (gensym))]
+     (concat (compare-code id num cmp lendif)
              then
              [(label lendif)])))
   ([id cmp num then else]
-   [[:nop]]))
+   (let [lelse  (keyword (gensym))
+         lendif (keyword (gensym))]
+     (concat (compare-code id num cmp lelse)
+             then
+             [[:jp lendif]
+              (label lelse)]
+             else
+             [(label lendif)]))))
