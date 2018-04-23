@@ -127,29 +127,22 @@
                                [(end)])]))
 
 
-;; screen scripts
+;; scripts
 
-(def screen-parser
-  (insta/parser (io/resource "screen_parser.bnf")
+(def script-parser
+  (insta/parser (io/resource "parser.bnf")
                 :string-ci true))
 
 (defn compile-screen-script
   [script]
-  (let [p (screen-parser script)]
+  (let [p (script-parser script)]
     (match p
            [:prog & subs]
            (into {} (map compile-sub subs)))))
 
-
-;; sprite scripts
-
-(def sprite-parser
-  (insta/parser (io/resource "sprite_parser.bnf")
-                :string-ci true))
-
 (defn compile-sprite-script
   [script]
-  (let [p (sprite-parser script)]
+  (let [p (script-parser script)]
     (match p
            [:prog & subs]
            (into {} (map compile-sub subs)))))

@@ -72,21 +72,15 @@
         id   (make-sprite-id name)]
     (convert-sprite-16x16 f)))
 
-(defn- compile-sprites
+(defn- make-sprites
   []
   (->> (list-sprites-files)
        (map (fn [file]
-              (let [name (.getName file)
-                    id   (make-sprite-id name)]
-                [id (compile-sprite file)])))
-       (into {})))
-
-(defn- make-sprites
-  [sprites]
-  (dorun
-   (map (fn [[res-id sprite]]
-          (make-proc res-id 3 [(apply db sprite)]))
-        sprites)))
+              (let [name   (.getName file)
+                    id     (make-sprite-id name)
+                    sprite (compile-sprite file)]
+                (make-proc id 3 [(apply db sprite)]))))
+       dorun))
 
 
 ;; scripts
@@ -150,9 +144,7 @@
 
 (defn compile-resources
   []
-  (make-sprites (compile-sprites))
+  (make-sprites)
   (make-titles)
-  (let [screens (compile-screen-scripts)
-        sprites (compile-sprite-scripts)]
-    (make-scripts screens)
-    (make-scripts sprites)))
+  (make-scripts (compile-screen-scripts))
+  (make-scripts (compile-sprite-scripts)))

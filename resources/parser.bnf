@@ -8,10 +8,13 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? (sprite-ops|if-ops) <nl>+
+<op> = <ws>? (sprite-ops|if-ops|new-ops|title) <nl>+
 <argcoord> = <'('> <ws>? num <ws>? <','> <ws>? num <ws>? <')'>
 <argstr> = <'('> <ws>? str <ws>? <')'>
 <argnum> = <'('> <ws>? num <ws>? <')'>
+
+<new-ops> = <'new'> <ws> (new-sprite)
+new-sprite = <'sprite'> <ws> str
 
 <sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color|sprite-type|sprite-width|sprite-height)
 sprite-pos = <'pos'> <ws> argcoord
@@ -28,3 +31,5 @@ else = <'else'> op* <ws>? <'endif'>
 if-keydown = <'keydown'> <ws>? argstr
 if-cmp = id <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? num
 if-collide = <'collide'> <ws>? argnum
+
+title = <'title'> <ws> str
