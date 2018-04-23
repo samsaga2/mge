@@ -12,6 +12,7 @@
 (defasmproc init {:page :code}
   ;; screen 2,2
   [:xor :a]
+  [:ld [sysvars/CLIKSW] :a]
   [:ld [sysvars/FORCLR] :a]
   [:ld [sysvars/BAKCLR] :a]
   [:ld [sysvars/BDRCLR] :a]
