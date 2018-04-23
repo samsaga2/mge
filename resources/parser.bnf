@@ -25,10 +25,11 @@ sprite-type = <'type'> <ws> num
 sprite-width = <'width'> <ws> num
 sprite-height = <'height'> <ws> num
 
-if-ops = (<'if'> <ws> (if-keydown|if-collide|if-cmp) <ws> <'then'> <nl> <ws>? then)
+if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
 else = <'else'> op* <ws>? <'endif'>
 if-keydown = <'keydown'> <ws>? argstr
+if-keypressed = <'keypressed'> <ws>? argstr
 if-cmp = id <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? num
 if-collide = <'collide'> <ws>? argnum
 

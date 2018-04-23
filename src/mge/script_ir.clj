@@ -108,6 +108,34 @@
              else
              [(label lendif)]))))
 
+(defn if-keypressed
+  ([keyname then]
+   (let [keyname (str/trim (str/upper-case keyname))
+         row     (:row (keys/key-codes keyname))
+         bit     (:bit (keys/key-codes keyname))
+         endif   (keyword (gensym))]
+     (concat [[:ld :e row]
+              [:ld :c bit]
+              [:call keys/key-pressed?]
+              [:jp :z endif]]
+             then
+             [(label endif)])))
+  ([keyname then else]
+   (let [keyname (str/trim (str/upper-case keyname))
+         row     (:row (keys/key-codes keyname))
+         bit     (:bit (keys/key-codes keyname))
+         lelse   (keyword (gensym))
+         lendif  (keyword (gensym))]
+     (concat [[:ld :e row]
+              [:ld :c bit]
+              [:call keys/key-pressed?]
+              [:jp :z lelse]]
+             then
+             [[:jp lendif]
+              (label lelse)]
+             else
+             [(label lendif)]))))
+
 (defn if-cmp
   ([id cmp num then]
    (let [lendif (keyword (gensym))]

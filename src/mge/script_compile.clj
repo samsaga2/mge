@@ -88,6 +88,15 @@
                           (compile-ops else))])
            [(if-keydown key (compile-ops then))])
 
+         [:if-ops [:if-keypressed [:str key]] [:then & then]]
+         (if (= (some-> then last first) :else)
+           (let [else (rest (last then))
+                 then (drop-last then)]
+             [(if-keypressed key
+                          (compile-ops then)
+                          (compile-ops else))])
+           [(if-keypressed key (compile-ops then))])
+
          [:if-ops [:if-cmp id cmp [:num n]] [:then & then]]
          (if (= (some-> then last first) :else)
            (let [else (rest (last then))
