@@ -7,8 +7,10 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? new-ops <nl>
+<op> = <ws>? (new-ops|title) <nl>
 <argcoord> = <'('> <ws>? num <ws>? <','> <ws>? num <ws>? <')'>
 
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <ws> str
+
+title = <'title'> <ws> str

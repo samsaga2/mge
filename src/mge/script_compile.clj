@@ -22,6 +22,16 @@
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
     (keyword (str "res-spritescr-" base-name "-" (name func)))))
 
+(defn make-title-pattern-id
+  [filename]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-titlepat-" base-name))))
+
+(defn make-title-color-id
+  [filename]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-titlecol-" base-name))))
+
 
 ;; ops
 
@@ -53,12 +63,16 @@
 
          :else nil))
 
-(defn- compile-new-ops
+(defn- compile-screen-ops
   [op]
   (match op
          [:new-sprite [:str s]]
          [(new-sprite (make-sprite-script-id s :init)
                       (make-sprite-script-id s :update))]
+
+         [:title [:str s]]
+         [(load-title (make-title-pattern-id s)
+                      (make-title-color-id s))]
 
          :else nil))
 
@@ -90,12 +104,14 @@
              [(if-collide (Integer. n)
                           (compile-ops then)
                           (compile-ops else))])
-           [(if-collide (Integer. n) (compile-ops then))])))
+           [(if-collide (Integer. n) (compile-ops then))])
+
+         :else nil))
 
 (defn- compile-op
   [op]
   (apply concat (or (compile-sprite-ops op)
-                    (compile-new-ops op)
+                    (compile-screen-ops op)
                     (compile-if-ops op)
                     (throw (Exception. (str "Uknown func " op))))))
 

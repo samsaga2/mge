@@ -1,4 +1,5 @@
 sub init
+    title "grass.png"
     new sprite "skeleton.scr"
     new sprite "blob.scr"
 endsub

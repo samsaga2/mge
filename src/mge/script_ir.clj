@@ -1,6 +1,7 @@
 (ns mge.script-ir
   (:require [mge.sprites :as spr]
             [mge.keys :as keys]
+            [mge.title :as title]
             [clj-z80.asm :refer :all :refer-macros :all]
             [clojure.string :as str]))
 
@@ -143,3 +144,9 @@
               (label lelse)]
              else
              [(label lendif)]))))
+
+(defn load-title
+  [patterns-id colors-id]
+  [[:ld :hl patterns-id]
+   [:ld :de colors-id]
+   [:call title/load-title]])
