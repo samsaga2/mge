@@ -92,7 +92,7 @@
   ([keyname then]
    (let [keyname (str/trim (str/upper-case keyname))
          endif   (keyword (gensym))]
-     (concat [(keys/key-pressed? keyname)
+     (concat [(keys/key-down? keyname)
               [:jp :nz endif]]
              then
              [(label endif)])))
@@ -100,7 +100,7 @@
    (let [keyname (str/trim (str/upper-case keyname))
          lelse   (keyword (gensym))
          lendif  (keyword (gensym))]
-     (concat [(keys/key-pressed? keyname)
+     (concat [(keys/key-down? keyname)
               [:jp :nz lelse]]
              then
              [[:jp lendif]

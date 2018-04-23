@@ -2,4 +2,6 @@
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.keys :as keys]))
 
-(def key-pressed? keys/key-pressed?)
+(def key-down? keys/key-down?)
+
+
