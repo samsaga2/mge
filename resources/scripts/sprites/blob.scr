@@ -6,9 +6,7 @@ sub init
 endsub
 
 sub update
-    if collide(1) then
-      color 6
-    else
-      color 5
+    if collide(3) then
+      delete
     endif
 endsub

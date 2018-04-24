@@ -1,0 +1,16 @@
+sub init
+    image "bullet.png"
+    color 13
+    type 3
+    width 4
+    width 4
+    pos (80, 100)
+endsub
+
+sub update
+    if x >= 252 then
+       delete
+    else
+       move (4, 0)
+    endif
+endsub

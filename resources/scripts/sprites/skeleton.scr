@@ -28,4 +28,7 @@ sub update
           move (0, 1)
        endif
     endif
+    if keypressed("space") then
+       new sprite "bullet.scr"
+    endif
 endsub
