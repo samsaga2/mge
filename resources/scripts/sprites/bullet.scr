@@ -10,7 +10,8 @@ endsub
 sub update
     if x >= 252 then
        delete
-    else
-       move (4, 0)
+       return
     endif
+
+    move (4, 0)
 endsub

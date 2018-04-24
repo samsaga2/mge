@@ -182,3 +182,7 @@
   [[:ld :hl patterns-id]
    [:ld :de colors-id]
    [:call title/load-title]])
+
+(defn return
+  []
+  [[:ret]])

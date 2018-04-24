@@ -77,6 +77,9 @@
          [(load-title (make-title-pattern-id s)
                       (make-title-color-id s))]
 
+         [:return]
+         [(return)]
+
          :else nil))
 
 (defn- compile-if-ops

@@ -8,7 +8,7 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? (sprite-ops|if-ops|new-ops|title) <nl>+
+<op> = <ws>? (sprite-ops|if-ops|new-ops|title|return) <nl>+
 <argcoord> = <'('> <ws>? num <ws>? <','> <ws>? num <ws>? <')'>
 <argstr> = <'('> <ws>? str <ws>? <')'>
 <argnum> = <'('> <ws>? num <ws>? <')'>
@@ -35,3 +35,4 @@ if-cmp = id <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? num
 if-collide = <'collide'> <ws>? argnum
 
 title = <'title'> <ws> str
+return = <'return'>
