@@ -81,44 +81,28 @@
 
 (defn- compile-if-ops
   [op]
-  (match op
-         [:if-ops [:if-keydown [:str key]] [:then & then]]
-         (if (= (some-> then last first) :else)
-           (let [else (rest (last then))
-                 then (drop-last then)]
-             [(if-keydown key
-                          (compile-ops then)
-                          (compile-ops else))])
-           [(if-keydown key (compile-ops then))])
+  (let [compile-if (fn [condfn then]
+                     (if (= (some-> then last first) :else)
+                       (let [else (rest (last then))
+                             then (drop-last then)]
+                         [(condfn
+                           (compile-ops then)
+                           (compile-ops else))])
+                       [(condfn (compile-ops then))]))]
+    (match op
+           [:if-ops [:if-keydown [:str key]] [:then & then]]
+           (compile-if (partial if-keydown key) then)
 
-         [:if-ops [:if-keypressed [:str key]] [:then & then]]
-         (if (= (some-> then last first) :else)
-           (let [else (rest (last then))
-                 then (drop-last then)]
-             [(if-keypressed key
-                          (compile-ops then)
-                          (compile-ops else))])
-           [(if-keypressed key (compile-ops then))])
+           [:if-ops [:if-keypressed [:str key]] [:then & then]]
+           (compile-if (partial if-keypressed key) then)
 
-         [:if-ops [:if-cmp id cmp [:num n]] [:then & then]]
-         (if (= (some-> then last first) :else)
-           (let [else (rest (last then))
-                 then (drop-last then)]
-             [(if-cmp id cmp (Integer. n)
-                      (compile-ops then)
-                      (compile-ops else))])
-           [(if-cmp id cmp (Integer. n) (compile-ops then))])
+           [:if-ops [:if-cmp id cmp [:num n]] [:then & then]]
+           (compile-if (partial if-cmp id cmp (Integer. n)) then)
 
-         [:if-ops [:if-collide [:num n]] [:then & then]]
-         (if (= (some-> then last first) :else)
-           (let [else (rest (last then))
-                 then (drop-last then)]
-             [(if-collide (Integer. n)
-                          (compile-ops then)
-                          (compile-ops else))])
-           [(if-collide (Integer. n) (compile-ops then))])
+           [:if-ops [:if-collide [:num n]] [:then & then]]
+           (compile-if (partial if-collide (Integer. n)) then)
 
-         :else nil))
+           :else nil)))
 
 (defn- compile-op
   [op]
