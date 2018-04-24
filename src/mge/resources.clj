@@ -45,7 +45,8 @@
        io/file
        file-seq
        (filter #(.isFile %))
-       (filter #(str/ends-with? (str/lower-case %) extension))))
+       (filter #(str/ends-with? (str/lower-case %) extension))
+       doall))
 
 (defn list-sprites-files
   []
@@ -74,15 +75,13 @@
 
 (defn- make-sprites
   []
-  (->> (list-sprites-files)
-       (map (fn [file]
-              (let [name   (.getName file)
-                    id     (make-sprite-id name)
-                    sprite (compile-sprite file)]
-                (println "Compiled sprite" name
-                         (count sprite) "bytes")
-                (make-proc id 3 [(apply db sprite)]))))
-       dorun))
+  (doseq [file (list-sprites-files)]
+    (let [name   (.getName file)
+          id     (make-sprite-id name)
+          sprite (compile-sprite file)]
+      (println "Compiled sprite" name
+               (count sprite) "bytes")
+      (make-proc id 3 [(apply db sprite)]))))
 
 
 ;; scripts
@@ -93,11 +92,12 @@
        (map (fn [file]
               (let [name   (.getName file)
                     id     (make-screen-script-id name)
-                    script (sc/compile-screen-script (slurp file))]
+                    script (sc/compile-script file)]
                 (println "Compiled screen script" name
                          (apply + (map count (vals script))) "opcodes")
                 [id script])))
-       (into {})))
+       (into {})
+       doall))
 
 (defn- compile-sprite-scripts
   []
@@ -105,24 +105,23 @@
        (map (fn [file]
               (let [name   (.getName file)
                     id     (make-sprite-script-id name)
-                    script (sc/compile-sprite-script (slurp file))]
+                    script (sc/compile-script file)]
                 (println "Compiled sprite script" name
                          (apply + (map count (vals script))) "opcodes")
                 [id script])))
-       (into {})))
+       (into {})
+       doall))
 
 (defn- make-scripts
   [scripts]
-  (dorun
-   (map (fn [[res-id script]]
-          (let [non-script [[:ret]]
-                init-id    (keyword (str (name res-id) "-init"))
-                update-id  (keyword (str (name res-id) "-update"))
-                init-asm   (get-in scripts [res-id :init])
-                update-asm (get-in scripts [res-id :update])]
-            (make-proc init-id 2 (or init-asm non-script))
-            (make-proc update-id 2 (or update-asm non-script))))
-        scripts)))
+  (doseq [[res-id script] scripts]
+    (let [non-script [[:ret]]
+          init-id    (keyword (str (name res-id) "-init"))
+          update-id  (keyword (str (name res-id) "-update"))
+          init-asm   (get-in scripts [res-id :init])
+          update-asm (get-in scripts [res-id :update])]
+      (make-proc init-id 2 (or init-asm non-script))
+      (make-proc update-id 2 (or update-asm non-script)))))
 
 
 ;; titles
@@ -137,19 +136,17 @@
 
 (defn- make-titles
   []
-  (->> (list-title-files)
-       (map (fn [file]
-              (let [name              (.getName file)
-                    [patterns colors] (compile-title file)]
-                (println "Compiled title" name
-                         (+ (count patterns)
-                            (count colors))
-                         "bytes")
-                (make-proc (make-title-pattern-id name) 3
-                           [(apply db patterns)])
-                (make-proc (make-title-color-id name) 3
-                           [(apply db colors)]))))
-       dorun))
+  (doseq [file (list-title-files)]
+    (let [name              (.getName file)
+          [patterns colors] (compile-title file)]
+      (println "Compiled title" name
+               (+ (count patterns)
+                  (count colors))
+               "bytes")
+      (make-proc (make-title-pattern-id name) 3
+                 [(apply db patterns)])
+      (make-proc (make-title-color-id name) 3
+                 [(apply db colors)]))))
 
 
 ;; core

@@ -3,36 +3,35 @@ prog = (<nl>|<ws>)? sub (<nl> sub)* (<nl>|<ws>)?
 
 nl = #'[\n\r]+'
 ws = #'\s+'
-<id> = #'[a-zA-Z_][a-zA-Z_0-9]*'
+id = #'[a-zA-Z_][a-zA-Z_0-9]*'
 num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
 <op> = <ws>? (sprite-ops|if-ops|new-ops|title|return) <nl>+
-<argcoord> = <'('> <ws>? num <ws>? <','> <ws>? num <ws>? <')'>
-<argstr> = <'('> <ws>? str <ws>? <')'>
-<argnum> = <'('> <ws>? num <ws>? <')'>
+
+<arg> = (id|num)
 
 <new-ops> = <'new'> <ws> (new-sprite)
-new-sprite = <'sprite'> <ws> str
+new-sprite = <'sprite'> <ws> str <ws>? [<','> <ws>? arg]*
 
 <sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color|sprite-type|sprite-width|sprite-height|sprite-delete)
-sprite-pos = <'pos'> <ws> argcoord
+sprite-pos = <'pos'> <ws> arg <ws>? <','> <ws>? arg
 sprite-image = <'image'> <ws> str
-sprite-move = <'move'> <ws> argcoord
-sprite-color = <'color'> <ws> num
-sprite-type = <'type'> <ws> num
-sprite-width = <'width'> <ws> num
-sprite-height = <'height'> <ws> num
+sprite-move = <'move'> <ws> arg <ws>? <','> <ws>? arg
+sprite-color = <'color'> <ws> arg
+sprite-type = <'type'> <ws> arg
+sprite-width = <'width'> <ws> arg
+sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
 
 if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
 else = <'else'> op* <ws>? <'endif'>
-if-keydown = <'keydown'> <ws>? argstr
-if-keypressed = <'keypressed'> <ws>? argstr
-if-cmp = id <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? num
-if-collide = <'collide'> <ws>? argnum
+if-keydown = <'keydown'> <ws>? str
+if-keypressed = <'keypressed'> <ws>? str
+if-cmp = arg <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? arg
+if-collide = <'collide'> <ws>? arg
 
 title = <'title'> <ws> str
 return = <'return'>

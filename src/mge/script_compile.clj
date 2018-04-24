@@ -40,30 +40,31 @@
 (defn- compile-sprite-ops
   [op]
   (match op
-         [:new-sprite [:str s]]
+         [:new-sprite [:str s] & args]
          [(new-sprite (make-sprite-script-id s :init)
-                      (make-sprite-script-id s :update))]
+                      (make-sprite-script-id s :update)
+                      args)]
 
          [:sprite-image [:str s]]
          [(sprite-image (make-sprite-id s))]
 
-         [:sprite-pos [:num x] [:num y]]
-         [(sprite-pos (Integer. x) (Integer. y))]
+         [:sprite-pos x y]
+         [(sprite-pos x y)]
 
-         [:sprite-move [:num x] [:num y]]
-         [(sprite-move (Integer. x) (Integer. y))]
+         [:sprite-move x y]
+         [(sprite-move x y)]
 
-         [:sprite-color [:num n]]
-         [(sprite-color (Integer. n))]
+         [:sprite-color n]
+         [(sprite-color n)]
 
-         [:sprite-type [:num n]]
-         [(sprite-type (Integer. n))]
+         [:sprite-type n]
+         [(sprite-type n)]
 
-         [:sprite-width [:num n]]
-         [(sprite-width (Integer. n))]
+         [:sprite-width n]
+         [(sprite-width n)]
 
-         [:sprite-height [:num n]]
-         [(sprite-height (Integer. n))]
+         [:sprite-height n]
+         [(sprite-height n)]
 
          [:sprite-delete]
          [(sprite-delete)]
@@ -99,49 +100,55 @@
            [:if-ops [:if-keypressed [:str key]] [:then & then]]
            (compile-if (partial if-keypressed key) then)
 
-           [:if-ops [:if-cmp id cmp [:num n]] [:then & then]]
-           (compile-if (partial if-cmp id cmp (Integer. n)) then)
+           [:if-ops [:if-cmp id cmp n] [:then & then]]
+           (compile-if (partial if-cmp id cmp n) then)
 
-           [:if-ops [:if-collide [:num n]] [:then & then]]
-           (compile-if (partial if-collide (Integer. n)) then)
+           [:if-ops [:if-collide n] [:then & then]]
+           (compile-if (partial if-collide n) then)
 
            :else nil)))
 
 (defn- compile-op
   [op]
-  (apply concat (or (compile-sprite-ops op)
-                    (compile-screen-ops op)
-                    (compile-if-ops op)
-                    (throw (Exception. (str "Uknown func " op))))))
+  (doall
+   (apply concat (or (compile-sprite-ops op)
+                     (compile-screen-ops op)
+                     (compile-if-ops op)
+                     (throw (Exception. (str "Uknown func " op)))))))
 
 (defn- compile-ops
   [ops]
-  (mapcat compile-op ops))
+  (doall (mapcat compile-op ops)))
 
 (defn- compile-sub
   [sub]
   (match sub
-         [:sub id & ops]
-         [(keyword id) (concat (compile-ops ops)
-                               [(end)])]))
+         [:sub [:id id] & ops]
+         [(keyword id)
+          (doall
+           (concat (compile-ops ops)
+                   (end)))]))
+
+(defn- compile-prog
+  [prog]
+  (match prog
+         [:prog & subs]
+         (doall (into {} (map compile-sub subs)))))
 
 
 ;; scripts
 
-(def script-parser
-  (insta/parser (io/resource "parser.bnf")
-                :string-ci true))
+(let [parser (insta/parser (io/resource "parser.bnf")
+                           :string-ci true)]
+  (defn script-parser
+    [file]
+    (let [s (slurp file)]
+      (if (insta/failure? s)
+        (do (println (.getName file) ": " (insta/get-failure s))
+            (System/exit 1))
+        (parser s)))))
 
-(defn compile-screen-script
-  [script]
-  (let [p (script-parser script)]
-    (match p
-           [:prog & subs]
-           (into {} (map compile-sub subs)))))
-
-(defn compile-sprite-script
-  [script]
-  (let [p (script-parser script)]
-    (match p
-           [:prog & subs]
-           (into {} (map compile-sub subs)))))
+(defn compile-script
+  [file]
+  (let [p (script-parser file)]
+    (compile-prog p)))

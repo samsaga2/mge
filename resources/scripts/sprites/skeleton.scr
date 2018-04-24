@@ -4,31 +4,31 @@ sub init
     type 1
     width 6
     height 7
-    pos (100, 100)
+    pos 100, 100
 endsub
 
 sub update
-    if keydown("left") then
+    if keydown "left" then
        if x > 0 then
-         move (-1, 0)
+         move -1, 0
        endif
     endif
-    if keydown("right") then
+    if keydown "right" then
        if x < 239 then
-          move (1, 0)
+          move 1, 0
        endif
     endif
-    if keydown("up") then
+    if keydown "up" then
        if y > 0 then
-          move (0, -1)
+          move 0, -1
        endif
     endif
-    if keydown("down") then
+    if keydown "down" then
        if y < 175 then
-          move (0, 1)
+          move 0, 1
        endif
     endif
-    if keypressed("space") then
-       new sprite "bullet.scr"
+    if keypressed "space" then
+       new sprite "bullet.scr", x, y
     endif
 endsub
