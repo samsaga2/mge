@@ -79,6 +79,8 @@
               (let [name   (.getName file)
                     id     (make-sprite-id name)
                     sprite (compile-sprite file)]
+                (println "Compiled sprite" name
+                         (count sprite) "bytes")
                 (make-proc id 3 [(apply db sprite)]))))
        dorun))
 
@@ -89,9 +91,11 @@
   []
   (->> (list-screen-scripts-files)
        (map (fn [file]
-              (let [name (.getName file)
-                    id   (make-screen-script-id name)
+              (let [name   (.getName file)
+                    id     (make-screen-script-id name)
                     script (sc/compile-screen-script (slurp file))]
+                (println "Compiled screen script" name
+                         (apply + (map count (vals script))) "opcodes")
                 [id script])))
        (into {})))
 
@@ -99,9 +103,11 @@
   []
   (->> (list-sprite-scripts-files)
        (map (fn [file]
-              (let [name (.getName file)
-                    id   (make-sprite-script-id name)
+              (let [name   (.getName file)
+                    id     (make-sprite-script-id name)
                     script (sc/compile-sprite-script (slurp file))]
+                (println "Compiled sprite script" name
+                         (apply + (map count (vals script))) "opcodes")
                 [id script])))
        (into {})))
 
@@ -135,8 +141,14 @@
        (map (fn [file]
               (let [name              (.getName file)
                     [patterns colors] (compile-title file)]
-                (make-proc (make-title-pattern-id name) 3 [(apply db patterns)])
-                (make-proc (make-title-color-id name) 3 [(apply db colors)]))))
+                (println "Compiled title" name
+                         (+ (count patterns)
+                            (count colors))
+                         "bytes")
+                (make-proc (make-title-pattern-id name) 3
+                           [(apply db patterns)])
+                (make-proc (make-title-color-id name) 3
+                           [(apply db colors)]))))
        dorun))
 
 
