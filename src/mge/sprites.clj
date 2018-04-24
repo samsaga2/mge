@@ -156,6 +156,21 @@
   [:ld [spr-selected] :a]
   [:ret])
 
+(defasmproc delete-sprite {:page :code}
+  ;; hide psrite
+  [:ld [:ix +spr-y+] 212]
+  ;; clear update table entry
+  [:ld :a [spr-selected]]
+  [:ld :l :a]
+  [:ld :h 0]
+  (m/mul-hl-by-pow2 2)
+  [:ld :de table]
+  [:add :hl :de]
+  [:ld [:hl] 0]
+  [:inc :hl]
+  [:ld [:hl] 0]
+  [:ret])
+
 (defasmproc update-table {:page :code}
   [:ld :hl table]
   [:ld :b +sprites-count+]

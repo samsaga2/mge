@@ -40,6 +40,10 @@
 (defn- compile-sprite-ops
   [op]
   (match op
+         [:new-sprite [:str s]]
+         [(new-sprite (make-sprite-script-id s :init)
+                      (make-sprite-script-id s :update))]
+
          [:sprite-image [:str s]]
          [(sprite-image (make-sprite-id s))]
 
@@ -61,15 +65,14 @@
          [:sprite-height [:num n]]
          [(sprite-height (Integer. n))]
 
+         [:sprite-delete]
+         [(sprite-delete)]
+
          :else nil))
 
 (defn- compile-screen-ops
   [op]
   (match op
-         [:new-sprite [:str s]]
-         [(new-sprite (make-sprite-script-id s :init)
-                      (make-sprite-script-id s :update))]
-
          [:title [:str s]]
          [(load-title (make-title-pattern-id s)
                       (make-title-color-id s))]

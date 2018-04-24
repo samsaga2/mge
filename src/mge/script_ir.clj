@@ -52,6 +52,10 @@
    [:ld :de update-id]
    [:call spr/new-sprite]])
 
+(defn sprite-delete
+  []
+  [[:call spr/delete-sprite]])
+
 (defn sprite-image
   [res-id]
   [[:ld :hl res-id]

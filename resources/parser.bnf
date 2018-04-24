@@ -16,7 +16,7 @@ sub = <'sub'> <ws> id <nl> op* <'endsub'>
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <ws> str
 
-<sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color|sprite-type|sprite-width|sprite-height)
+<sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color|sprite-type|sprite-width|sprite-height|sprite-delete)
 sprite-pos = <'pos'> <ws> argcoord
 sprite-image = <'image'> <ws> str
 sprite-move = <'move'> <ws> argcoord
@@ -24,6 +24,7 @@ sprite-color = <'color'> <ws> num
 sprite-type = <'type'> <ws> num
 sprite-width = <'width'> <ws> num
 sprite-height = <'height'> <ws> num
+sprite-delete = <'delete'>
 
 if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
