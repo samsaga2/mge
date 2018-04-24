@@ -18,9 +18,9 @@
   [:ld [sysvars/BDRCLR] :a]
   [:ld :a 2]
   [:call bios/CHGMOD]
-  [:call keys/init-keys]
   [:call spr/init-sprites]
-  [:jp scr/init-screens])
+  [:call scr/init-screens]
+  [:jp keys/init-keys])
 
 (defasmproc main-loop {:page :code}
   (label :loop
