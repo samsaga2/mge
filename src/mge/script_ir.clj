@@ -95,6 +95,27 @@
               then
               (label lendif)))))
 
+(defn- push-args
+  [args]
+  (when (> (count args) (count s/args))
+    (throw (Exception. "Too many args for new sprite")))
+  (mapcat (fn [argvar arg]
+            [[:ld :hl argvar]
+             [:ld :a [:hl]]
+             [:push :af]
+             (load-arg arg)
+             [:ld [:hl] :a]])
+          s/args
+          args))
+
+(defn- pop-args
+  [args]
+  (mapcat (fn [argvar _]
+            [[:pop :af]
+             [:ld [argvar] :a]])
+          s/args
+          args))
+
 
 ;; core
 
@@ -106,27 +127,11 @@
   [init-id update-id args]
   (when (> (count args) (count s/args))
     (throw (Exception. "Too many args for new sprite")))
-  ;; save current args and set the new args
-  ;; (this is slow but its simple and this code will not called very often)
-  (concat
-   (mapcat (fn [argvar arg]
-             [[:ld :hl argvar]
-              [:ld :a [:hl]]
-              [:push :af]
-              (load-arg arg)
-              [:ld [:hl] :a]])
-           s/args
-           args)
-   ;; create new sprite
-   [[:ld :hl init-id]
-    [:ld :de update-id]
-    [:call spr/new-sprite]]
-   ;; restore args
-   (mapcat (fn [argvar _]
-             [[:pop :af]
-              [:ld [argvar] :a]])
-           s/args
-           args)))
+  (concat (push-args args)
+          [[:ld :hl init-id]
+           [:ld :de update-id]
+           [:call spr/new-sprite]]
+          (pop-args args)))
 
 (defn sprite-delete
   []
@@ -247,3 +252,9 @@
    (load-arg arg1)
    [:sub :b]
    [:ld (arg-source id) :a]])
+
+(defn call
+  [func args]
+  (concat (push-args args)
+          [[:call func]]
+          (pop-args args)))

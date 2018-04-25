@@ -116,12 +116,10 @@
   [scripts]
   (doseq [[res-id script] scripts]
     (let [non-script [[:ret]]
-          init-id    (keyword (str (name res-id) "-init"))
-          update-id  (keyword (str (name res-id) "-update"))
-          init-asm   (get-in scripts [res-id :init])
-          update-asm (get-in scripts [res-id :update])]
-      (make-proc init-id 2 (or init-asm non-script))
-      (make-proc update-id 2 (or update-asm non-script)))))
+          script     (get scripts res-id)]
+      (doseq [[func-name func-asm] script]
+        (let [func-id (keyword (str (name res-id) "-" (name func-name)))]
+          (make-proc func-id 2 (or func-asm non-script)))))))
 
 
 ;; titles

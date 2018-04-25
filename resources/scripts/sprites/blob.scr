@@ -2,30 +2,28 @@ sub init
     image "blob.png"
     color 5
     type 2
-    pos 120, rnd
-    if y > 176 then
-       move 255, -80
-    endif
+    call random_y
 endsub
 
 sub update
     if collide 3 then
-      pos 255, rnd
-      if y > 176 then
-        move 0, -80
-      endif
+      call random_y
     else
       move -1, 0
       if x = 0 then
-         pos 255, rnd
-         if y > 176 then
-           move 0, -80
-         endif
+         call random_y
       endif
     endif
     if collide 1 then
        color 7
     else
        color 5
+    endif
+endsub
+
+sub random_y
+    pos 255, rnd
+    if y > 176 then
+       call random_y
     endif
 endsub

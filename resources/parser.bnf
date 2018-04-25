@@ -8,7 +8,7 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 
 sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? (sprite-ops|if-ops|new-ops|title|return|assign) <nl>+
+<op> = <ws>? (sprite-ops|if-ops|new-ops|title|return|assign|call) <nl>+
 
 <arg> = (id|num)
 
@@ -35,6 +35,7 @@ if-collide = <'collide'> <ws>? arg
 
 title = <'title'> <ws> str
 return = <'return'>
+call = <'call'> <ws> id <ws>? [<','> <ws>? arg]*
 
 <assign> = (assign-val|assign-add|assign-sub)
 assign-val = id <ws>? <'='> <ws>? arg
