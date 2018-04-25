@@ -4,10 +4,11 @@
             [mge.title :as title]
             [clj-z80.asm :refer :all :refer-macros :all]
             [clojure.string :as str]
-            [mge.script :as s]))
+            [mge.script :as s]
+            [mge.util :as u]))
 
 
-;; util
+;; args
 
 (defn- get-localvar-index
   [id]
@@ -43,13 +44,30 @@
       :num (var-source (Integer. v))
       :id  (var-source v))))
 
+(defn- load-arg
+  [arg & [reg]]
+  (if (and (= (first arg) :id)
+           (= (str/lower-case (second arg)) "rnd"))
+    [[:call u/random-word]
+     [:ld (or reg :a) :l]]
+    [[:ld (or reg :a) (arg-source arg)]]))
+
+(defn- store-arg
+  [arg & [reg]]
+  [[:ld (arg-source arg) (or reg :a)]])
+
+
+;; util
+
 (defn- compare-code
   [i j cmp skip-label]
   (concat (case cmp
-            "<=" [[:ld :a (arg-source j)]
-                  [:cp (arg-source i)]]
-            [[:ld :a (arg-source i)]
-             [:cp (arg-source j)]])
+            "<=" [(load-arg j)
+                  (load-arg i :b)
+                  [:cp :b]]
+            [(load-arg i)
+             (load-arg j :b)
+             [:cp :b]])
           (case cmp
             "="  [[:jp :nz skip-label]]
             "<>" [[:jp :z skip-label]]
@@ -95,7 +113,7 @@
              [[:ld :hl argvar]
               [:ld :a [:hl]]
               [:push :af]
-              [:ld :a (arg-source arg)]
+              (load-arg arg)
               [:ld [:hl] :a]])
            s/args
            args)
@@ -121,39 +139,41 @@
 
 (defn sprite-pos
   [x y]
-  [[:ld :a (arg-source x)]
+  [(load-arg x)
    [:ld [:ix spr/+spr-x+] :a]
-   [:ld :a (arg-source y)]
+   (load-arg y)
    [:ld [:ix spr/+spr-y+] :a]])
 
 (defn sprite-move
   [x y]
   [[:ld :a [:ix spr/+spr-x+]]
-   [:add (arg-source x)]
+   (load-arg x :b)
+   [:add :b]
    [:ld [:ix spr/+spr-x+] :a]
 
    [:ld :a [:ix spr/+spr-y+]]
-   [:add (arg-source y)]
+   (load-arg y :b)
+   [:add :b]
    [:ld [:ix spr/+spr-y+] :a]])
 
 (defn sprite-color
   [n]
-  [[:ld :a (arg-source n)]
+  [(load-arg n)
    [:ld [:ix spr/+spr-color+] :a]])
 
 (defn sprite-type
   [n]
-  [[:ld :a (arg-source n)]
+  [(load-arg n)
    [:ld [:ix spr/+spr-type+] :a]])
 
 (defn sprite-width
   [n]
-  [[:ld :a (arg-source n)]
+  [(load-arg n)
    [:ld [:ix spr/+spr-w+] :a]])
 
 (defn sprite-height
   [n]
-  [[:ld :a (arg-source n)]
+  [(load-arg n)
    [:ld [:ix spr/+spr-h+] :a]])
 
 (defn if-keydown
@@ -192,7 +212,7 @@
    (if-collide type then nil))
   ([type then else]
    (gen-if (fn [l]
-             [[:ld :a (arg-source type)]
+             [(load-arg type)
               [:call spr/collide]
               [:jp :z l]])
            then else)))
@@ -209,21 +229,21 @@
 
 (defn assign-val
   [id n]
-  [[:ld :a (arg-source n)]
-   [:ld (arg-source id) :a]])
+  [(load-arg n)
+   (store-arg id)])
 
 (defn assign-add
   [id arg1 arg2]
-  [[:ld :a (arg-source arg2)]
+  [(load-arg arg2)
    [:ld :b :a]
-   [:ld :a (arg-source arg1)]
+   (load-arg arg1)
    [:add :b]
-   [:ld (arg-source id) :a]])
+   (store-arg id)])
 
 (defn assign-sub
   [id arg1 arg2]
-  [[:ld :a (arg-source arg2)]
+  [(load-arg arg2)
    [:ld :b :a]
-   [:ld :a (arg-source arg1)]
+   (load-arg arg1)
    [:sub :b]
    [:ld (arg-source id) :a]])
