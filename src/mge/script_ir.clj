@@ -45,8 +45,6 @@
                          (throw (Exception. "Uknown variable " id))))
         (number? id) id))
 
-(var-source "arg0")
-
 (defn- arg-source
   [arg]
   (let [v (second arg)]
