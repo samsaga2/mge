@@ -86,30 +86,29 @@
 
 (defn new-sprite
   [init-id update-id args]
-  (let [argvars [arg0 arg1 arg2 arg3]]
-    (when (> (count args) (count argvars))
-      (throw (Exception. "Too many args for new sprite")))
-    ;; save current args and set the new args
-    ;; (this is slow but its simple and this code will not called very often)
-    (concat
-     (mapcat (fn [argvar arg]
-               [[:ld :hl argvar]
-                [:ld :a [:hl]]
-                [:push :af]
-                [:ld :a (arg-source arg)]
-                [:ld [:hl] :a]])
-             argvars
-             args)
-     ;; create new sprite
-     [[:ld :hl init-id]
-      [:ld :de update-id]
-      [:call spr/new-sprite]]
-     ;; restore args
-     (mapcat (fn [argvar _]
-               [[:pop :af]
-                [:ld [argvar] :a]])
-             argvars
-             args))))
+  (when (> (count args) (count s/args))
+    (throw (Exception. "Too many args for new sprite")))
+  ;; save current args and set the new args
+  ;; (this is slow but its simple and this code will not called very often)
+  (concat
+   (mapcat (fn [argvar arg]
+             [[:ld :hl argvar]
+              [:ld :a [:hl]]
+              [:push :af]
+              [:ld :a (arg-source arg)]
+              [:ld [:hl] :a]])
+           s/args
+           args)
+   ;; create new sprite
+   [[:ld :hl init-id]
+    [:ld :de update-id]
+    [:call spr/new-sprite]]
+   ;; restore args
+   (mapcat (fn [argvar _]
+             [[:pop :af]
+              [:ld [argvar] :a]])
+           s/args
+           args)))
 
 (defn sprite-delete
   []
@@ -177,7 +176,7 @@
                [[:ld :e (:row keycode)]
                 [:ld :c (:bit keycode)]
                 [:call keys/key-pressed?]
-                [:jp :z l]]))
+                [:jp :nz l]]))
            then else)))
 
 (defn if-cmp

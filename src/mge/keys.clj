@@ -11,8 +11,6 @@
 
 (defasmproc init-keys {:page :code}
   [:xor :a]
-  [:ld [sysvars/REPCNT] :a]
   [:ld [sysvars/CLIKSW] :a]
-  [:call update-keys]
-  [:ret])
+  [:jp keys/init-keys])
 
