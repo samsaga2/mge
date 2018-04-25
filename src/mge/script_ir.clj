@@ -70,6 +70,24 @@
             "<"  [[:jp :nc skip-label]]
             "<=" [[:jp :c skip-label]])))
 
+(defn- gen-if
+  [condfn then else]
+  (if else
+    ;; if-then-else
+    (let [lelse  (keyword (gensym))
+          lendif (keyword (gensym))]
+      (concat (condfn lelse)
+              then
+              [[:jp lendif]]
+              (label lelse)
+              else
+              (label lendif)))
+    ;; if-then
+    (let [lendif (keyword (gensym))]
+      (concat (condfn lendif)
+              then
+              (label lendif)))))
+
 
 ;; core
 
@@ -152,88 +170,44 @@
 
 (defn if-keydown
   ([keyname then]
-   (let [keyname (str/trim (str/upper-case keyname))
-         endif   (keyword (gensym))]
-     (concat [(keys/key-down? keyname)
-              [:jp :nz endif]]
-             then
-             (label endif))))
+   (if-keydown keyname then nil))
   ([keyname then else]
-   (let [keyname (str/trim (str/upper-case keyname))
-         lelse   (keyword (gensym))
-         lendif  (keyword (gensym))]
-     (concat [(keys/key-down? keyname)
-              [:jp :nz lelse]]
-             then
-             [[:jp lendif]]
-             (label lelse)
-             else
-             (label lendif)))))
+   (gen-if (fn [l]
+             (let [keyname (str/trim (str/upper-case keyname))]
+               [(keys/key-down? keyname)
+                [:jp :nz l]]))
+           then else)))
 
 (defn if-keypressed
   ([keyname then]
-   (let [keyname (str/trim (str/upper-case keyname))
-         row     (:row (keys/key-codes keyname))
-         bit     (:bit (keys/key-codes keyname))
-         endif   (keyword (gensym))]
-     (concat [[:ld :e row]
-              [:ld :c bit]
-              [:call keys/key-pressed?]
-              [:jp :z endif]]
-             then
-             (label endif))))
+   (if-keypressed keyname then nil))
   ([keyname then else]
-   (let [keyname (str/trim (str/upper-case keyname))
-         row     (:row (keys/key-codes keyname))
-         bit     (:bit (keys/key-codes keyname))
-         lelse   (keyword (gensym))
-         lendif  (keyword (gensym))]
-     (concat [[:ld :e row]
-              [:ld :c bit]
-              [:call keys/key-pressed?]
-              [:jp :z lelse]]
-             then
-             [[:jp lendif]]
-             (label lelse)
-             else
-             (label lendif)))))
+   (gen-if (fn [l]
+             (let [keyname (str/trim (str/upper-case keyname))
+                   keycode (keys/key-codes keyname)]
+               [[:ld :e (:row keycode)]
+                [:ld :c (:bit keycode)]
+                [:call keys/key-pressed?]
+                [:jp :z l]]))
+           then else)))
 
 (defn if-cmp
   ([id cmp num then]
-   (let [lendif (keyword (gensym))]
-     (concat (compare-code id num cmp lendif)
-             then
-             (label lendif))))
+   (if-cmp id cmp num then nil))
   ([id cmp num then else]
-   (let [lelse  (keyword (gensym))
-         lendif (keyword (gensym))]
-     (concat (compare-code id num cmp lelse)
-             then
-             [[:jp lendif]]
-             (label lelse)
-             else
-             (label lendif)))))
+   (gen-if (fn [l]
+             (compare-code id num cmp l))
+           then else)))
 
 (defn if-collide
   ([type then]
-   [[:nop]]
-   (let [lendif (keyword (gensym))]
-     (concat [[:ld :a (arg-source type)]
-              [:call spr/collide]
-              [:jp :z lendif]]
-             then
-             (label lendif))))
+   (if-collide type then nil))
   ([type then else]
-   (let [lelse  (keyword (gensym))
-         lendif (keyword (gensym))]
-     (concat [[:ld :a (arg-source type)]
+   (gen-if (fn [l]
+             [[:ld :a (arg-source type)]
               [:call spr/collide]
-              [:jp :z lelse]]
-             then
-             [[:jp lendif]]
-             (label lelse)
-             else
-             (label lendif)))))
+              [:jp :z l]])
+           then else)))
 
 (defn load-title
   [patterns-id colors-id]
