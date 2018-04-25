@@ -71,7 +71,7 @@
 
          :else nil))
 
-(defn- compile-screen-ops
+(defn- compile-misc-ops
   [op]
   (match op
          [:title [:str s]]
@@ -80,6 +80,15 @@
 
          [:return]
          [(return)]
+
+         [:assign-val id arg]
+         [(assign-val id arg)]
+
+         [:assign-add id arg1 arg2]
+         [(assign-add id arg1 arg2)]
+
+         [:assign-sub id arg1 arg2]
+         [(assign-sub id arg1 arg2)]
 
          :else nil))
 
@@ -112,7 +121,7 @@
   [op]
   (doall
    (apply concat (or (compile-sprite-ops op)
-                     (compile-screen-ops op)
+                     (compile-misc-ops op)
                      (compile-if-ops op)
                      (throw (Exception. (str "Uknown func " op)))))))
 
@@ -143,10 +152,7 @@
   (defn script-parser
     [file]
     (let [s (slurp file)]
-      (if (insta/failure? s)
-        (do (println (.getName file) ": " (insta/get-failure s))
-            (System/exit 1))
-        (parser s)))))
+      (parser s))))
 
 (defn compile-script
   [file]

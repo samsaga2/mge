@@ -3,15 +3,8 @@
             [mge.keys :as keys]
             [mge.title :as title]
             [clj-z80.asm :refer :all :refer-macros :all]
-            [clojure.string :as str]))
-
-
-;; script vars
-
-(defasmbyte arg0)
-(defasmbyte arg1)
-(defasmbyte arg2)
-(defasmbyte arg3)
+            [clojure.string :as str]
+            [mge.script :as s]))
 
 
 ;; util
@@ -27,14 +20,12 @@
     "height" spr/+spr-h+
     nil))
 
-(defn- get-globalvar-addr
-  [id]
-  (case id
-    "arg0"   arg0
-    "arg1"   arg1
-    "arg2"   arg2
-    "arg3"   arg3
-    nil))
+(let [vars (->> (concat s/args s/globals)
+                   (map (fn [g] [(second (str/split (name g) #"---")) g]))
+                   (into {}))]
+  (defn- get-globalvar-addr
+    [id]
+    (get vars id)))
 
 (defn- var-source
   [id]
@@ -60,8 +51,8 @@
             [[:ld :a (arg-source i)]
              [:cp (arg-source j)]])
           (case cmp
-            "="  [:jp :nz skip-label]
-            "<>" [:jp :z skip-label]
+            "="  [[:jp :nz skip-label]]
+            "<>" [[:jp :z skip-label]]
             ">"  [[:jp :z skip-label]
                   [:jp :c skip-label]]
             ">=" [[:jp :c skip-label]]
@@ -216,3 +207,24 @@
 (defn return
   []
   [[:ret]])
+
+(defn assign-val
+  [id n]
+  [[:ld :a (arg-source n)]
+   [:ld (arg-source id) :a]])
+
+(defn assign-add
+  [id arg1 arg2]
+  [[:ld :a (arg-source arg2)]
+   [:ld :b :a]
+   [:ld :a (arg-source arg1)]
+   [:add :b]
+   [:ld (arg-source id) :a]])
+
+(defn assign-sub
+  [id arg1 arg2]
+  [[:ld :a (arg-source arg2)]
+   [:ld :b :a]
+   [:ld :a (arg-source arg1)]
+   [:sub :b]
+   [:ld (arg-source id) :a]])

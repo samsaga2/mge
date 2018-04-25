@@ -8,5 +8,11 @@ endsub
 sub update
     if collide 3 then
       delete
+      return
+    endif
+    if collide 1 then
+       color 7
+    else
+       color 5
     endif
 endsub

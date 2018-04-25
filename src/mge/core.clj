@@ -7,6 +7,7 @@
             [mge.resources :refer [compile-resources]]
             [mge.sprites :as spr]
             [mge.screens :as scr]
+            [mge.script :as s]
             [mge.keys :as keys]
             clj-z80.msx.image))
 
@@ -18,6 +19,7 @@
   [:ld [sysvars/BDRCLR] :a]
   [:ld :a 2]
   [:call bios/CHGMOD]
+  [:call s/init-scripts]
   [:call spr/init-sprites]
   [:call scr/init-screens]
   [:jp keys/init-keys])

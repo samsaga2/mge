@@ -2,4 +2,5 @@ sub init
     title "grass.png"
     new sprite "skeleton.scr"
     new sprite "blob.scr"
+    global0 = 0
 endsub

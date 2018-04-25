@@ -1,15 +1,21 @@
 sub init
+    if global0 = 2 then
+       delete
+       return
+    endif
+    global0 = global0 + 1
     image "bullet.png"
     color 13
     type 3
-    width 4
-    width 4
+    width 2
+    height 2
     pos arg0, arg1
     move 6, 0
 endsub
 
 sub update
     if x >= 252 then
+       global0 = global0 - 1
        delete
        return
     endif
