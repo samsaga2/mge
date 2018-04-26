@@ -35,7 +35,7 @@
 
 ;; ops
 
-(def ^:dynamic *file* nil)
+(def ^:dynamic *script-file* nil)
 
 (declare compile-ops)
 
@@ -93,7 +93,8 @@
          [(assign-sub id arg1 arg2)]
 
          [:call [:id s] & args]
-         [(call (make-sprite-script-id (.getName *file*) (keyword s))
+         [(call (make-sprite-script-id (.getName *script-file*)
+                                       (keyword s))
                 args)]
 
          :else nil))
@@ -162,6 +163,6 @@
 
 (defn compile-script
   [file]
-  (binding [*file* file]
+  (binding [*script-file* file]
     (let [p (script-parser file)]
       (compile-prog p))))

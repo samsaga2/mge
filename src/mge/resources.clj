@@ -116,7 +116,8 @@
   [scripts]
   (doseq [[res-id script] scripts]
     (let [non-script [[:ret]]
-          script     (get scripts res-id)]
+          script     (get scripts res-id)
+          script     (merge {:update nil} script)]
       (doseq [[func-name func-asm] script]
         (let [func-id (keyword (str (name res-id) "-" (name func-name)))]
           (make-proc func-id 2 (or func-asm non-script)))))))
