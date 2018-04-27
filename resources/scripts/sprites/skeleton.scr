@@ -8,6 +8,11 @@ sub init
 endsub
 
 sub update
+    if collide 2 then
+       color 6
+    else
+       color 15
+    endif
     if keydown "left" then
         if x > 0 then
             move -1, 0
@@ -33,10 +38,5 @@ sub update
     endif
     if keypressed "m" then
         new sprite "blob.scr"
-    endif
-    if collide 2 then
-       color 6
-    else
-       color 15
     endif
 endsub

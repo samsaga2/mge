@@ -9,13 +9,15 @@
 
 ;; sprite struct
 (def +spr-type+ 0)
-(def +spr-x+ 1)
-(def +spr-y+ 2)
-(def +spr-color+ 3)
-(def +spr-w+ 4)
-(def +spr-h+ 5)
+(def +spr-flags+ 1)
+(def +spr-x+ 2)
+(def +spr-y+ 3)
+(def +spr-color+ 4)
+(def +spr-w+ 5)
+(def +spr-h+ 6)
 
-;; sprites data
+;; sprites consts
+(def +flag-deleted+ 1)
 (def +sprites-count+ 32)
 (def +varsprites-count+ 32)
 
@@ -137,6 +139,8 @@
          [:dec :hl]
          [:ld [:hl] :e]
          [:pop :hl]                     ; call init
+         [:ld [:ix +spr-type+] 0]
+         [:ld [:ix +spr-flags+] 0]
          [:ld [:ix +spr-w+] 8]
          [:ld [:ix +spr-h+] 8]
          [:call u/call-hl]
@@ -164,18 +168,45 @@
   [:ret])
 
 (defasmproc delete-sprite {:page :code}
-  ;; hide psrite
-  [:ld [:ix +spr-y+] 212]
-  ;; clear update table entry
-  [:ld :a [spr-selected]]
-  [:ld :l :a]
-  [:ld :h 0]
-  (m/mul-hl-by-pow2 2)
-  [:ld :de table]
-  [:add :hl :de]
-  [:ld [:hl] 0]
-  [:inc :hl]
-  [:ld [:hl] 0]
+  [:ld :a [:ix +spr-flags+]]
+  [:or +flag-deleted+]
+  [:ld [:ix +spr-flags+] :a]
+  [:ret])
+
+(defasmproc update-deleted {:page :code}
+  [:ld :hl table]
+  [:ld :b +sprites-count+]
+  [:ld :ix data]
+  (label :loop
+         ;; get update addr
+         [:ld :e [:hl]]
+         [:inc :hl]
+         [:ld :d [:hl]]
+         [:inc :hl]
+
+         [:ld :a :d]
+         [:or :a]
+         [:jp :z :next]
+
+         ;; check deleted flag
+         [:ld :a [:ix +spr-flags+]]
+         [:and +flag-deleted+]
+         [:jp :z :next]
+
+         ;; real delete
+         [:ld [:ix +spr-y+] 212]
+         [:dec :hl]
+         [:dec :hl]
+         [:ld [:hl] 0]
+         [:inc :hl]
+         [:ld [:hl] 0]
+         [:inc :hl]
+
+         (label :next
+                ;; next data
+                [:ld :de +varsprites-count+]
+                [:add :ix :de]
+                [:djnz :loop]))
   [:ret])
 
 (defasmproc update-table {:page :code}
@@ -315,4 +346,5 @@
 
 (defasmproc update-sprites {:page :code}
   [:call update-table]
+  [:call update-deleted]
   [:jp update-attributes])

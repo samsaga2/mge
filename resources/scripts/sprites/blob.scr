@@ -7,12 +7,14 @@ endsub
 
 sub update
     if collide 3 then
-      call random_y
-    else
-      move -1, 0
-      if x = 0 then
-         call random_y
-      endif
+      delete
+      new sprite "blob.scr"
+      return
+    endif
+
+    move -1, 0
+    if x = 0 then
+       call random_y
     endif
 endsub
 

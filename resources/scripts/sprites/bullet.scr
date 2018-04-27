@@ -1,7 +1,7 @@
 sub init
     if global0 = 2 then
-       delete
-       return
+        delete
+        return
     endif
     global0 = global0 + 1
     image "bullet.png"
@@ -15,9 +15,15 @@ endsub
 
 sub update
     if x >= 252 then
-       global0 = global0 - 1
-       delete
-       return
+        global0 = global0 - 1
+        delete
+        return
+    endif
+
+    if collide 2 then
+        global0 = global0 - 1
+        delete
+        return
     endif
 
     move 4, 0
