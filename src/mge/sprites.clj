@@ -179,7 +179,6 @@
   [:ld :ix data]
   (label :loop
          ;; get update addr
-         [:ld :e [:hl]]
          [:inc :hl]
          [:ld :d [:hl]]
          [:inc :hl]
