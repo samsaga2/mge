@@ -14,11 +14,6 @@ sub update
          call random_y
       endif
     endif
-    if collide 1 then
-       color 7
-    else
-       color 5
-    endif
 endsub
 
 sub random_y

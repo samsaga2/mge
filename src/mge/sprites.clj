@@ -3,7 +3,8 @@
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sprites :as spr]
             [mge.util :as u]
-            [mge.math :as m]))
+            [mge.math :as m]
+            [clj-z80.msx.lib.sysvars :as sysvars]))
 
 
 ;; sprite struct
@@ -105,8 +106,12 @@
 (defasmproc new-sprite {:page :code}
   ;; HL=init-func
   ;; DE=update-func
+
+  ;; save things
   [:ld :a [spr-selected]]
   [:push :af]
+  [:push :ix]
+  ;; save funcs on stack
   [:push :hl]
   [:push :de]
   [:ld :hl table]
@@ -135,7 +140,8 @@
          [:ld [:ix +spr-w+] 8]
          [:ld [:ix +spr-h+] 8]
          [:call u/call-hl]
-         [:pop :af]                     ; restore selected
+         [:pop :ix]                     ; restore things
+         [:pop :af]
          [:ld [spr-selected] :a]
          [:ret]
 
@@ -152,6 +158,7 @@
   [:pop :de]
   [:pop :hl]
   ;; restore selected
+  [:pop :ix]
   [:pop :af]
   [:ld [spr-selected] :a]
   [:ret])
@@ -212,74 +219,62 @@
 
 ;; collision
 
-(defasmword check-y1)
-(defasmword check-y2)
-(defasmword check-x1)
-(defasmword check-x2)
-(defasmword check-w)
-(defasmword check-h)
+(defasmbyte vdps0)
 
 ;; a=1 if distance (x1,y1) to (x2,y2) < (w,h)
-(defasmproc check-collision {:page :code}
-  [:xor :a]
-  ;; check y
-  (label :check-y
-         [:ld :hl [check-y1]]
-         [:ld :de [check-y2]]
-         [:or :a]
-         [:sbc :hl :de]
-         [:jp :c :swapy]
-         [:ld :de [check-h]]
-         [:call u/negate-de]
-         [:add :hl :de]
-         [:jp :c :no-collision]
-         [:jp :check-x]
-         (label :swapy
-                [:ld :de [check-h]]
-                [:add :hl :de]
-                [:jp :nc :no-collision]))
-  (label :check-x
-         [:ld :hl [check-x1]]
-         [:ld :de [check-x2]]
-         [:or :a]
-         [:sbc :hl :de]
-         [:jp :c :swapx]
-         [:ld :de [check-w]]
-         [:call u/negate-de]
-         [:add :hl :de]
-         [:jp :c :no-collision]
-         [:jp :collision]
-         (label :swapx
-                [:ld :de [check-w]]
-                [:add :hl :de]
-                [:jp :nc :no-collision]))
+(defasmproc box-collision {:page :code}
+  ;; w
+  [:ld :a [:ix +spr-w+]]
+  [:add [:iy +spr-w+]]
+  [:ld :d :a]
+
+  ;; x
+  [:ld :a [:ix +spr-x+]]
+  [:sub [:iy +spr-x+]]
+  [:jp :nc :no-swap-x]
+  [:neg]
+  (label :no-swap-x)
+  [:cp :d]
+  [:jp :nc :no-collision]
+
+  ;; h
+  [:ld :a [:ix +spr-h+]]
+  [:add [:iy +spr-h+]]
+  [:ld :d :a]
+
+  ;; y
+  [:ld :a [:ix +spr-y+]]
+  [:sub [:iy +spr-y+]]
+  [:jp :nc :no-swap-y]
+  [:neg]
+  (label :no-swap-y)
+  [:cp :d]
+  [:jp :nc :no-collision]
+
   (label :collision
-         [:ld :a 1]
-         [:or :a]
+         [:xor :a]
+         [:inc :a]
          [:ret])
   (label :no-collision
          [:xor :a]
          [:ret]))
 
 (defasmproc collide {:page :code}
-  [:ld :hl 0]
-  [:ld [check-x1] :hl]
-  [:ld [check-x2] :hl]
-  [:ld [check-y1] :hl]
-  [:ld [check-y2] :hl]
-  [:ld [check-w] :hl]
-  [:ld [check-h] :hl]
-  [:ld :c :a]
-  [:ld :hl table]
+  [:ld :c :a]                           ; save type
+
+  [:ld :a [vdps0]]                      ; check vdp collision bit
+  [:bit 5 :a]
+  [:ret :z]
+
+  [:ld :hl table]                       ; check sprites box collision
   [:ld :b +sprites-count+]
   [:ld :iy data]
   (label :loop
          ;; get update addr
          [:inc :hl]
-         [:ld :d [:hl]]
+         [:ld :a [:hl]]
          [:inc :hl]
 
-         [:ld :a :d]
          [:or :a]
          [:jp :z :next]
 
@@ -289,28 +284,7 @@
          [:jp :nz :next]
 
          ;; check collision
-         [:push :hl]
-         [:ld :a [:ix +spr-x+]]         ; x1
-         [:add 8]
-         [:ld [check-x1] :a]
-         [:ld :a [:ix +spr-y+]]         ; y1
-         [:add 8]
-         [:ld [check-y1] :a]
-         [:ld :a [:iy +spr-x+]]         ; x2
-         [:add 8]
-         [:ld [check-x2] :a]
-         [:ld :a [:iy +spr-y+]]         ; y2
-         [:add 8]
-         [:ld [check-y2] :a]
-         [:ld :a [:ix +spr-w+]]         ; w
-         [:add [:iy +spr-w+]]
-         [:ld [check-w] :a]
-         [:ld :a [:ix +spr-h+]]         ; h
-         [:add [:iy +spr-h+]]
-         [:ld [check-h] :a]
-
-         [:call check-collision]
-         [:pop :hl]
+         [:call box-collision]
          [:ret :nz]
 
          (label :next
