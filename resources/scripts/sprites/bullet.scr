@@ -1,8 +1,4 @@
 sub init
-    if global0 = 2 then
-        delete
-        return
-    endif
     global0 = global0 + 1
     image "bullet.png"
     color 13

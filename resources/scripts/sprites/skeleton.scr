@@ -34,9 +34,8 @@ sub update
         endif
     endif
     if keypressed "space" then
-        new sprite "bullet.scr", x, y
-    endif
-    if keypressed "m" then
-        new sprite "blob.scr"
+        if global0 < 2 then
+            new sprite "bullet.scr", x, y
+        endif
     endif
 endsub

@@ -3,6 +3,7 @@ sub init
     color 5
     type 2
     call random_y
+    pos arg0, y
 endsub
 
 sub update
@@ -20,7 +21,7 @@ endsub
 
 sub random_y
     pos 255, rnd
-    if y > 176 then
+    if y > 144 then
        call random_y
     endif
 endsub
