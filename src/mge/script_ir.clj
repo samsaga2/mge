@@ -5,7 +5,9 @@
             [clj-z80.asm :refer :all :refer-macros :all]
             [clojure.string :as str]
             [mge.script :as s]
-            [mge.util :as u]))
+            [mge.util :as u]
+            [clj-z80.msx.image :refer [set-konami5-page]]
+            [clj-z80.image :refer [get-label]]))
 
 
 ;; args
@@ -139,7 +141,8 @@
 
 (defn sprite-image
   [res-id]
-  [[:ld :hl res-id]
+  [(set-konami5-page 3 (fn [] (:page (get-label res-id))))
+   [:ld :hl res-id]
    [:call spr/write-pattern]])
 
 (defn sprite-pos
@@ -224,9 +227,14 @@
 
 (defn load-title
   [patterns-id colors-id]
-  [[:ld :hl patterns-id]
-   [:ld :de colors-id]
-   [:call title/load-title]])
+  [[:di]
+   (set-konami5-page 3 (fn [] (:page (get-label patterns-id))))
+   [:ld :hl patterns-id]
+   [:call title/load-patterns]
+   (set-konami5-page 3 (fn [] (:page (get-label colors-id))))
+   [:ld :hl colors-id]
+   [:call title/load-colors]
+   [:ei]])
 
 (defn return
   []

@@ -6,21 +6,18 @@
             [clj-z80.msx.util.graphics :refer [convert-screen2]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]))
 
-(defasmproc load-title {:page :code}
+(defasmproc load-patterns {:page :code}
   ;; HL=patterns
-  ;; DE=colors
-  [:di]
-  [:push :de]
-  ;; uncompress tile patterns
   [:push :hl]
   [:ld :hl 0]
   [:call bios/SETWRT]
   [:pop :hl]
-  [:call uncompress-lz77-to-vram]
-  ;; uncompress tile colors
+  [:jp uncompress-lz77-to-vram])
+
+(defasmproc load-colors {:page :code}
+  ;; HL=colors
+  [:push :hl]
   [:ld :hl 0x2000]
   [:call bios/SETWRT]
   [:pop :hl]
-  [:call uncompress-lz77-to-vram]
-  [:ei]
-  [:ret])
+  [:jp uncompress-lz77-to-vram])

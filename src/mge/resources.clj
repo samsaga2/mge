@@ -9,6 +9,11 @@
             [clojure.string :as str]))
 
 
+
+(def script-pages [0 1 2])
+(def res-pages (vec (range 4 64)))
+
+
 ;; ids
 
 (defn make-sprite-id
@@ -81,7 +86,7 @@
           sprite (compile-sprite file)]
       (println "Compiled sprite" name
                (count sprite) "bytes")
-      (make-proc id 3 [(apply db sprite)]))))
+      (make-proc id res-pages [(apply db sprite)]))))
 
 
 ;; scripts
@@ -120,7 +125,7 @@
           script     (merge {:update nil} script)]
       (doseq [[func-name func-asm] script]
         (let [func-id (keyword (str (name res-id) "-" (name func-name)))]
-          (make-proc func-id 2 (or func-asm non-script)))))))
+          (make-proc func-id script-pages (or func-asm non-script)))))))
 
 
 ;; titles
@@ -142,9 +147,10 @@
                (+ (count patterns)
                   (count colors))
                "bytes")
-      (make-proc (make-title-pattern-id name) 3
+      (make-proc (make-title-pattern-id name) res-pages
                  [(apply db patterns)])
-      (make-proc (make-title-color-id name) 3
+      (println colors)
+      (make-proc (make-title-color-id name) res-pages
                  [(apply db colors)]))))
 
 
