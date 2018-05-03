@@ -1,36 +1,9 @@
 (ns mge.script-compile
   (:require [clojure.core.match :refer [match]]
+            [clojure.java.io :as io]
             [instaparse.core :as insta]
-            [mge.script-ir :refer :all]
-            [clojure.java.io :as io]))
-
-
-;; ids
-
-(defn make-sprite-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-spr-" base-name))))
-
-(defn make-screen-script-id
-  [filename func]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-screenscr-" base-name "-" (name func)))))
-
-(defn make-sprite-script-id
-  [filename func]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-spritescr-" base-name "-" (name func)))))
-
-(defn make-title-pattern-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-titlepat-" base-name))))
-
-(defn make-title-color-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-titlecol-" base-name))))
+            [mge.resources-id :refer :all]
+            [mge.script-ir :refer :all]))
 
 
 ;; ops
@@ -48,16 +21,14 @@
                       args)]
 
          [:sprite-image [:str s]]
-         [(sprite-image (make-sprite-id s))]
+         [(sprite-image (make-sprite-id s)
+                        (make-sprite-color-id s))]
 
          [:sprite-pos x y]
          [(sprite-pos x y)]
 
          [:sprite-move x y]
          [(sprite-move x y)]
-
-         [:sprite-color n]
-         [(sprite-color n)]
 
          [:sprite-type n]
          [(sprite-type n)]
@@ -152,7 +123,7 @@
          (doall (into {} (map compile-sub subs)))))
 
 
-;; scripts
+;; core
 
 (let [parser (insta/parser (io/resource "parser.bnf")
                            :string-ci true)]

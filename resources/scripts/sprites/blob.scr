@@ -1,6 +1,5 @@
 sub init
     image "blob.png"
-    color 5
     type 2
     call random_y
     pos arg0, y
@@ -9,7 +8,7 @@ endsub
 sub update
     if collide 3 then
       delete
-      new sprite "blob.scr"
+      new sprite "blob.scr", 255
       return
     endif
 

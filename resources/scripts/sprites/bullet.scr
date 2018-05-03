@@ -1,7 +1,6 @@
 sub init
     global0 = global0 + 1
     image "bullet.png"
-    color 13
     type 3
     width 2
     height 2

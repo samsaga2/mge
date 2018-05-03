@@ -15,11 +15,10 @@ sub = <'sub'> <ws> id <nl> op* <'endsub'>
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <ws> str <ws>? [<','> <ws>? arg]*
 
-<sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-color|sprite-type|sprite-width|sprite-height|sprite-delete)
+<sprite-ops> = (sprite-pos|sprite-image|sprite-move|sprite-type|sprite-width|sprite-height|sprite-delete)
 sprite-pos = <'pos'> <ws> arg <ws>? <','> <ws>? arg
 sprite-image = <'image'> <ws> str
 sprite-move = <'move'> <ws> arg <ws>? <','> <ws>? arg
-sprite-color = <'color'> <ws> arg
 sprite-type = <'type'> <ws> arg
 sprite-width = <'width'> <ws> arg
 sprite-height = <'height'> <ws> arg

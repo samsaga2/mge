@@ -1,9 +1,9 @@
 (ns mge.resources
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.image :refer [set-label!]]
+            [mge.resources-id :refer :all]
             [clojure.java.io :as io]
-            [clj-z80.msx.util.sprites :refer [convert-sprite-16x16]]
-            [clj-z80.msx.util.graphics :refer [convert-screen2]]
+            [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
             [mge.script-compile :as sc]
             [clojure.string :as str]))
@@ -12,34 +12,6 @@
 
 (def script-pages [0 1 2])
 (def res-pages (vec (range 4 64)))
-
-
-;; ids
-
-(defn make-sprite-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-spr-" base-name))))
-
-(defn make-screen-script-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-screenscr-" base-name))))
-
-(defn make-sprite-script-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-spritescr-" base-name))))
-
-(defn make-title-pattern-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-titlepat-" base-name))))
-
-(defn make-title-color-id
-  [filename]
-  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-titlecol-" base-name))))
 
 
 ;; files
@@ -72,21 +44,20 @@
 
 ;; sprites
 
-(defn- compile-sprite
-  [f]
-  (let [name (.getName f)
-        id   (make-sprite-id name)]
-    (convert-sprite-16x16 f)))
-
 (defn- make-sprites
   []
   (doseq [file (list-sprites-files)]
-    (let [name   (.getName file)
-          id     (make-sprite-id name)
-          sprite (compile-sprite file)]
+    (let [name     (.getName file)
+          id       (make-sprite-id name)
+          id-color (make-sprite-color-id name)
+          sprite   (convert-sprite-16x16 file)
+          colors   (:colors sprite)
+          patterns (flatten (:patterns sprite))]
+      (assert (= (count colors) 1))
       (println "Compiled sprite" name
-               (count sprite) "bytes")
-      (make-proc id res-pages [(apply db sprite)]))))
+               (count patterns) "bytes")
+      (make-proc id res-pages [(apply db patterns)])
+      (set-label! id-color (first colors)))))
 
 
 ;; scripts
@@ -149,7 +120,6 @@
                "bytes")
       (make-proc (make-title-pattern-id name) res-pages
                  [(apply db patterns)])
-      (println colors)
       (make-proc (make-title-color-id name) res-pages
                  [(apply db colors)]))))
 
