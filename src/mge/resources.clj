@@ -47,17 +47,19 @@
 (defn- make-sprites
   []
   (doseq [file (list-sprites-files)]
-    (let [name     (.getName file)
-          id       (make-sprite-id name)
-          id-color (make-sprite-color-id name)
-          sprite   (convert-sprite-16x16 file)
-          colors   (:colors sprite)
-          patterns (flatten (:patterns sprite))]
-      (assert (= (count colors) 1))
+    (let [name      (.getName file)
+          id        (make-sprite-id name)
+          id-color1 (make-sprite-color1-id name)
+          id-color2 (make-sprite-color2-id name)
+          sprite    (convert-sprite-16x16 file)
+          colors    (:colors sprite)
+          patterns  (flatten (:patterns sprite))]
+      (assert (<= (count colors) 2))
       (println "Compiled sprite" name
                (count patterns) "bytes")
       (make-proc id res-pages [(apply db patterns)])
-      (set-label! id-color (first colors)))))
+      (set-label! id-color1 (first colors))
+      (set-label! id-color2 (or (second colors) 0)))))
 
 
 ;; scripts

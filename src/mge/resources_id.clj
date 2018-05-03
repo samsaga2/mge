@@ -5,10 +5,15 @@
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
     (keyword (str "res-spr-" base-name))))
 
-(defn make-sprite-color-id
+(defn make-sprite-color1-id
   [filename]
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
-    (keyword (str "res-spr-" base-name "-color"))))
+    (keyword (str "res-spr-" base-name "-color1"))))
+
+(defn make-sprite-color2-id
+  [filename]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-spr-" base-name "-color2"))))
 
 (defn make-screen-script-id
   ([filename]

@@ -22,7 +22,8 @@
 
          [:sprite-image [:str s]]
          [(sprite-image (make-sprite-id s)
-                        (make-sprite-color-id s))]
+                        (make-sprite-color1-id s)
+                        (make-sprite-color2-id s))]
 
          [:sprite-pos x y]
          [(sprite-pos x y)]

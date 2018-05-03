@@ -12,13 +12,14 @@
 (def +spr-flags+ 1)
 (def +spr-x+ 2)
 (def +spr-y+ 3)
-(def +spr-color+ 4)
-(def +spr-w+ 5)
-(def +spr-h+ 6)
+(def +spr-color1+ 4)
+(def +spr-color2+ 5)
+(def +spr-w+ 6)
+(def +spr-h+ 7)
 
 ;; sprites consts
 (def +flag-deleted+ 1)
-(def +sprites-count+ 32)
+(def +sprites-count+ 16)
 (def +varsprites-count+ 32)
 
 
@@ -71,6 +72,7 @@
   [:ld :de +varsprites-count+]
   [:ld :b +sprites-count+]
   (label :loop
+         ;; sprite 1
          [:ld :a [:ix +spr-y+]]
          [:ld [:hl] :a]                 ; y
          [:inc :hl]
@@ -81,12 +83,40 @@
 
          [:inc :hl]                     ; pattern
 
-         [:ld :a [:ix +spr-color+]]     ; color
+         [:ld :a [:ix +spr-color1+]]     ; color
          [:ld [:hl] :a]
          [:inc :hl]
 
-         [:add :ix :de]
-         [:djnz :loop])
+         ;; sprite 2
+         [:ld :a [:ix +spr-color2+]]
+         [:or :a]
+         [:jp :z :hide]
+
+         (label :show
+                [:ld :a [:ix +spr-y+]]
+                [:ld [:hl] :a]                 ; y
+                [:inc :hl]
+
+                [:ld :a [:ix +spr-x+]]
+                [:ld [:hl] :a]                 ; x
+                [:inc :hl]
+
+                [:inc :hl]                     ; pattern
+
+                [:ld :a [:ix +spr-color2+]]     ; color
+                [:ld [:hl] :a]
+                [:inc :hl]
+                [:jp :next])
+         (label :hide
+                [:ld :a 212]
+                [:ld [:hl] :a]                 ; y
+                [:inc :hl]
+                [:inc :hl]
+                [:inc :hl]
+                [:inc :hl])
+         (label :next
+                [:add :ix :de]
+                [:djnz :loop]))
   [:jp spr/write-attributes])
 
 
@@ -332,7 +362,13 @@
   ;; spr-selected
   ;; HL=pattern addr
   [[:ld :a [spr-selected]]
-   [:jp spr/write-pattern]])
+   [:add :a]
+   [:push :hl]
+   [:call bios/CALPAT]
+   [:ex :de :hl]
+   [:ld :bc 64]
+   [:pop :hl]
+   [:jp bios/LDIRVM]])
 
 
 ;; core

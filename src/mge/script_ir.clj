@@ -18,7 +18,6 @@
     "type"   spr/+spr-type+
     "x"      spr/+spr-x+
     "y"      spr/+spr-y+
-    "color"  spr/+spr-color+
     "width"  spr/+spr-w+
     "height" spr/+spr-h+
     nil))
@@ -140,8 +139,9 @@
   [[:call spr/delete-sprite]])
 
 (defn sprite-image
-  [res-id color-id]
-  [[:ld [:ix spr/+spr-color+] color-id]
+  [res-id color1-id color2-id]
+  [[:ld [:ix spr/+spr-color1+] color1-id]
+   [:ld [:ix spr/+spr-color2+] color2-id]
    (set-konami5-page 3 (fn [] (:page (get-label res-id))))
    [:ld :hl res-id]
    [:call spr/write-pattern]])
