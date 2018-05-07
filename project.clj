@@ -7,5 +7,6 @@
                  [clj-z80/clj-z80 "0.1.0-SNAPSHOT"]
                  [instaparse "1.4.9"]
                  [org.clojure/core.match "0.3.0-alpha5"]]
+  :jvm-opts []
   :main mge.core
   :aot [mge.core])
