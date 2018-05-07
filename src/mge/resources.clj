@@ -121,9 +121,9 @@
                   (count colors))
                "bytes")
       (make-proc (make-title-pattern-id name) res-pages
-                 [(apply db patterns)])
+                 [[:db patterns]])
       (make-proc (make-title-color-id name) res-pages
-                 [(apply db colors)]))))
+                 [[:db colors]]))))
 
 
 ;; core
