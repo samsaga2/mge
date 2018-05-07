@@ -2,6 +2,7 @@
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sprites :as spr]
+            [clj-z80.image :refer [get-label]]
             [mge.util :as u]
             [mge.math :as m]
             [clj-z80.msx.lib.sysvars :as sysvars]))
@@ -23,9 +24,16 @@
 (def +varsprites-count+ 32)
 
 
-;; sprite data
+;; variables
 
+(defasmbyte vdps0)
+(defasmbyte spr-flicker)
+(defasmbyte spr-selected)
+(defasmvar table (* +sprites-count+ 2))
 (defasmvar data (* +sprites-count+ +varsprites-count+))
+
+
+;; sprite data
 
 (defasmproc clear-data {:page :code}
   ;; clear
@@ -39,10 +47,12 @@
   [:ld :ix spr/spr-attributes]
   [:ld :de +varsprites-count+]
   [:ld :b 32]
+  [:xor :a]
   (label :loop
-         [:ld [:ix +spr-y+] 212]
+         [:ld [:ix +spr-y+] 192]
          [:ld [:ix +spr-w+] 8]
          [:ld [:ix +spr-h+] 8]
+         [:add 8]
          [:add :ix :de]
          [:djnz :loop])
   [:ret])
@@ -50,42 +60,82 @@
 
 ;; attributes
 
-(defasmproc clear-attributes {:page :code}
-  [:ld :hl spr/spr-attributes]
-  [:ld :bc 32]
-  [:ld :a 0]
-  (label :loop
-         [:ld [:hl] 212]
-         [:inc :hl]
-         [:inc :hl]
-         [:ld [:hl] :a]                 ; spr pattern
-         [:inc :hl]
-         [:ld [:hl] 15]                 ; spr color
-         [:inc :hl]
-         [:add 4]
-         [:djnz :loop])
-  [:ret])
-
-(defasmproc update-attributes {:page :code}
+(defasmproc update-attributes-asc {:page :code}
+  [:ld :a 1]
+  [:ld [spr-flicker] :a]
   [:ld :ix data]
-  [:ld :hl spr/spr-attributes]
-  [:ld :de +varsprites-count+]
+  [:ld :iy spr/spr-attributes]
   [:ld :b +sprites-count+]
+  [:ld :c 0]
+  (label :loop
+         ;; sprite 1
+         [:ld :a [:ix +spr-color1+]]
+         [:or :a]
+         [:jp :z :hide-sprite1]
+         [:ld [:iy spr/+attribute-color+] :a]
+
+         [:ld :a [:ix +spr-y+]]
+         [:ld [:iy spr/+attribute-y+] :a]
+         [:ld [:iy (+ spr/+attribute-y+ 4)] :a]
+
+         [:ld :a [:ix +spr-x+]]
+         [:ld [:iy spr/+attribute-x+] :a]
+         [:ld [:iy (+ spr/+attribute-x+ 4)] :a]
+
+         [:ld :a :c]
+         [:ld [:iy spr/+attribute-pattern+] :a]
+         [:add 4]
+         [:ld [:iy (+ spr/+attribute-pattern+ 4)] :a]
+         [:add 4]
+         [:ld :c :a]
+
+         ;; sprite 2
+         [:ld :a [:ix +spr-color2+]]
+         [:or :a]
+         [:jp :z :hide-sprite2]
+
+         (label :show-sprite
+                [:ld [:iy (+ spr/+attribute-color+ 4)] :a]
+                [:jp :next])
+         (label :hide-sprite1
+                [:ld [:iy spr/+attribute-y+] 192])
+         (label :hide-sprite2
+                [:ld [:iy (+ spr/+attribute-y+ 4)] 192])
+         (label :next
+                [:ld :de +varsprites-count+]
+                [:add :ix :de]
+                [:ld :de 8]
+                [:add :iy :de]
+                [:djnz :loop]))
+  [:jp spr/write-attributes])
+
+(defasmproc update-attributes-desc {:page :code}
+  [:xor :a]
+  [:ld [spr-flicker] :a]
+  [:ld :ix data]
+  [:ld :iy (fn [] (+ (:address (get-label spr/spr-attributes))
+                     (* 30 4)))]
+  [:ld :b +sprites-count+]
+  [:ld :c 0]
   (label :loop
          ;; sprite 1
          [:ld :a [:ix +spr-y+]]
-         [:ld [:hl] :a]                 ; y
-         [:inc :hl]
+         [:ld [:iy spr/+attribute-y+] :a]
+         [:ld [:iy (+ spr/+attribute-y+ 4)] :a]
 
          [:ld :a [:ix +spr-x+]]
-         [:ld [:hl] :a]                 ; x
-         [:inc :hl]
+         [:ld [:iy spr/+attribute-x+] :a]
+         [:ld [:iy (+ spr/+attribute-x+ 4)] :a]
 
-         [:inc :hl]                     ; pattern
+         [:ld :a :c]
+         [:ld [:iy spr/+attribute-pattern+] :a]
+         [:add 4]
+         [:ld [:iy (+ spr/+attribute-pattern+ 4)] :a]
+         [:add 4]
+         [:ld :c :a]
 
-         [:ld :a [:ix +spr-color1+]]     ; color
-         [:ld [:hl] :a]
-         [:inc :hl]
+         [:ld :a [:ix +spr-color1+]]
+         [:ld [:iy spr/+attribute-color+] :a]
 
          ;; sprite 2
          [:ld :a [:ix +spr-color2+]]
@@ -93,38 +143,26 @@
          [:jp :z :hide]
 
          (label :show
-                [:ld :a [:ix +spr-y+]]
-                [:ld [:hl] :a]                 ; y
-                [:inc :hl]
-
-                [:ld :a [:ix +spr-x+]]
-                [:ld [:hl] :a]                 ; x
-                [:inc :hl]
-
-                [:inc :hl]                     ; pattern
-
-                [:ld :a [:ix +spr-color2+]]     ; color
-                [:ld [:hl] :a]
-                [:inc :hl]
+                [:ld [:iy (+ spr/+attribute-color+ 4)] :a]
                 [:jp :next])
          (label :hide
-                [:ld :a 212]
-                [:ld [:hl] :a]                 ; y
-                [:inc :hl]
-                [:inc :hl]
-                [:inc :hl]
-                [:inc :hl])
+                [:ld [:iy (+ spr/+attribute-y+ 4)] 192])
          (label :next
+                [:ld :de +varsprites-count+]
                 [:add :ix :de]
+                [:ld :de -8]
+                [:add :iy :de]
                 [:djnz :loop]))
   [:jp spr/write-attributes])
 
+(defasmproc update-attributes {:page :code}
+  [:ld :a [spr-flicker]]
+  [:or :a]
+  [:jp :z update-attributes-asc]
+  [:jp update-attributes-desc])
+
 
 ;; sprites table
-
-(defasmvar table (* +sprites-count+ 2))
-
-(defasmbyte spr-selected)
 
 (defasmproc init-table {:page :code}
   [:ld :hl table]
@@ -223,7 +261,8 @@
          [:jp :z :next]
 
          ;; real delete
-         [:ld [:ix +spr-y+] 212]
+         [:ld [:ix +spr-y+] 192]
+         [:ld [:ix (+ +spr-y+ 4)] 192]
          [:dec :hl]
          [:dec :hl]
          [:ld [:hl] 0]
@@ -279,9 +318,8 @@
 
 ;; collision
 
-(defasmbyte vdps0)
-
 ;; a=1 if distance (x1,y1) to (x2,y2) < (w,h)
+
 (defasmproc box-collision {:page :code}
   ;; w
   [:ld :a [:ix +spr-w+]]
@@ -374,10 +412,11 @@
 ;; core
 
 (defasmproc init-sprites {:page :code}
+  [:xor :a]
+  [:ld [spr-flicker] :a]
   [:call spr/enable-sprites-16]
   [:call init-table]
-  [:call clear-data]
-  [:jp clear-attributes])
+  [:jp clear-data])
 
 (defasmproc update-sprites {:page :code}
   [:call update-table]
