@@ -18,8 +18,7 @@
 
 (defn- list-files
   [path extension]
-  (->> path
-       io/file
+  (->> (io/file "game" path)
        file-seq
        (filter #(.isFile %))
        (filter #(str/ends-with? (str/lower-case %) extension))
@@ -27,19 +26,19 @@
 
 (defn list-sprites-files
   []
-  (list-files "resources/sprites" ".png"))
+  (list-files "sprites" ".png"))
 
 (defn list-screen-scripts-files
   []
-  (list-files "resources/scripts/screens" ".scr"))
+  (list-files "scripts/screens" ".scr"))
 
 (defn list-sprite-scripts-files
   []
-  (list-files "resources/scripts/sprites" ".scr"))
+  (list-files "scripts/sprites" ".scr"))
 
 (defn list-title-files
   []
-  (list-files "resources/titles" ".png"))
+  (list-files "titles" ".png"))
 
 
 ;; sprites
@@ -134,3 +133,5 @@
   (make-titles)
   (make-scripts (compile-screen-scripts))
   (make-scripts (compile-sprite-scripts)))
+
+@clj-z80.image/labels
