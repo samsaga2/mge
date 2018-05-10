@@ -1,5 +1,5 @@
 sub init
-    title "grass.png"
+    load title "grass.png"
     new sprite "skeleton.scr"
     new sprite "blob.scr", 239
     new sprite "blob.scr", 223

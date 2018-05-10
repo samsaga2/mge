@@ -133,5 +133,3 @@
   (make-titles)
   (make-scripts (compile-screen-scripts))
   (make-scripts (compile-sprite-scripts)))
-
-@clj-z80.image/labels

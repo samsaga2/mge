@@ -1,5 +1,5 @@
 sub init
-    image "blob.png"
+    load image "blob.png"
     type 2
     call random_y
     pos arg0, y

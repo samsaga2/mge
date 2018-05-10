@@ -66,5 +66,6 @@
 (defn -main
   [& args]
   (compile-resources)
-  (build-asm-image-file "test.rom" :msx-konami5)
-  (build-sym-file "test.sym"))
+  (build-asm-image-file "game.rom" :msx-konami5)
+  (build-sym-file "game.sym")
+  (sh "openmsx" "-carta" "game.rom"))

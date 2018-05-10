@@ -1,5 +1,5 @@
 sub init
-    image "skeleton.png"
+    load image "skeleton.png"
     type 1
     width 6
     height 7

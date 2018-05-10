@@ -20,11 +20,6 @@
                       (make-sprite-script-id s :update)
                       args)]
 
-         [:sprite-image [:str s]]
-         [(sprite-image (make-sprite-id s)
-                        (make-sprite-color1-id s)
-                        (make-sprite-color2-id s))]
-
          [:sprite-pos x y]
          [(sprite-pos x y)]
 
@@ -48,10 +43,6 @@
 (defn- compile-misc-ops
   [op]
   (match op
-         [:title [:str s]]
-         [(load-title (make-title-pattern-id s)
-                      (make-title-color-id s))]
-
          [:return]
          [(return)]
 
@@ -68,6 +59,15 @@
          [(call (make-sprite-script-id (.getName *script-file*)
                                        (keyword s))
                 args)]
+
+         [:load "image" [:str s]]
+         [(sprite-image (make-sprite-id s)
+                        (make-sprite-color1-id s)
+                        (make-sprite-color2-id s))]
+
+         [:load "title" [:str s]]
+         [(load-title (make-title-pattern-id s)
+                      (make-title-color-id s))]
 
          :else nil))
 
@@ -130,8 +130,11 @@
                            :string-ci true)]
   (defn script-parser
     [file]
-    (let [s (slurp file)]
-      (parser s))))
+    (let [s (parser (slurp file))]
+      (if (insta/failure? s)
+        (do (println "Error parsing script" (.getName file) ": " (insta/get-failure s))
+            [:prog])
+        s))))
 
 (defn compile-script
   [file]
