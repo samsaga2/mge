@@ -40,3 +40,11 @@
   [filename]
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
     (keyword (str "res-titlecol-" base-name))))
+
+(defn make-animation-script-id
+  ([filename]
+   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+     (keyword (str "res-animscr-" base-name))))
+  ([filename func]
+   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+     (keyword (str "res-animscr-" base-name "-" (name func))))))

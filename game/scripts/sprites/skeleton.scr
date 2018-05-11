@@ -1,5 +1,5 @@
 sub init
-    load image "skeleton.png"
+    load image, "skeleton.png"
     type 1
     width 6
     height 7
@@ -29,7 +29,7 @@ sub update
     endif
     if keypressed "space" then
         if global0 < 2 then
-            new sprite "bullet.scr", x, y
+            new sprite, "bullet.scr", x, y
         endif
     endif
 endsub

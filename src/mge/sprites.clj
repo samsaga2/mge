@@ -1,6 +1,7 @@
 (ns mge.sprites
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
+            [clj-z80.msx.image :refer [set-konami5-page]]
             [clj-z80.msx.lib.sprites :as spr]
             [clj-z80.image :refer [get-label]]
             [mge.util :as u]
@@ -17,6 +18,8 @@
 (def +spr-color2+ 5)
 (def +spr-w+ 6)
 (def +spr-h+ 7)
+(def +spr-anim+ 8)                       ; 2 bytes
+(def +spr-anim-page+ 10)
 
 ;; sprites consts
 (def +flag-deleted+ 1)
@@ -263,6 +266,8 @@
          ;; real delete
          [:ld [:ix +spr-y+] 192]
          [:ld [:ix (+ +spr-y+ 4)] 192]
+         [:ld [:ix +spr-anim+] 0]
+         [:ld [:ix (inc +spr-anim+)] 0]
          [:dec :hl]
          [:dec :hl]
          [:ld [:hl] 0]
@@ -394,7 +399,62 @@
   [:ret])
 
 
-;; sprite
+;; animation
+
+(defasmproc animation-next-frame {:page :code}
+  [[:pop :hl]
+   [:ld [:ix +spr-anim+] :l]
+   [:ld [:ix (inc +spr-anim+)] :h]
+   [:ret]])
+
+(defasmproc update-animations {:page :code}
+  [:ld :hl table]
+  [:ld :b +sprites-count+]
+  [:ld :ix data]
+  [:xor :a]
+  [:ld [spr-selected] :a]
+  (label :loop
+         ;; get update addr
+         [:ld :e [:hl]]
+         [:inc :hl]
+         [:ld :d [:hl]]
+         [:inc :hl]
+         [:ld :a :d]
+         [:or :a]
+         [:jp :z :next]
+
+         ;; get animation addr
+         [:ld :e [:ix +spr-anim+]]
+         [:ld :d [:ix (inc +spr-anim+)]]
+         [:ld :a :d]
+         [:or :a]
+         [:jp :z :next]
+
+         ;; call update script
+         [:ld :a [:ix +spr-anim-page+]]
+         (set-konami5-page 3 :a)
+         [:push :bc]
+         [:push :hl]
+         [:push :ix]
+         [:ex :de :hl]
+         [:call u/call-hl]
+         [:pop :ix]
+         [:pop :hl]
+         [:pop :bc]
+
+         (label :next
+                ;; next index
+                [:ld :a [spr-selected]]
+                [:inc :a]
+                [:ld [spr-selected] :a]
+                ;; next data
+                [:ld :de +varsprites-count+]
+                [:add :ix :de]
+                [:djnz :loop]))
+  [:ret])
+
+
+;; pattern
 
 (defasmproc write-pattern {:page :code}
   ;; spr-selected
@@ -421,4 +481,5 @@
 (defasmproc update-sprites {:page :code}
   [:call update-table]
   [:call update-deleted]
+  [:call update-animations]
   [:jp update-attributes])

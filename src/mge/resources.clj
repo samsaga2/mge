@@ -36,6 +36,10 @@
   []
   (list-files "scripts/sprites" ".scr"))
 
+(defn list-animation-scripts-files
+  []
+  (list-files "scripts/animations" ".scr"))
+
 (defn list-title-files
   []
   (list-files "titles" ".png"))
@@ -89,6 +93,19 @@
        (into {})
        doall))
 
+(defn- compile-animation-scripts
+  []
+  (->> (list-animation-scripts-files)
+       (map (fn [file]
+              (let [name   (.getName file)
+                    id     (make-animation-script-id name)
+                    script (sc/compile-animation file)]
+                (println "Compiled animation script" name
+                         (apply + (map count script)) "opcodes")
+                [id {:update script}])))
+       (into {})
+       doall))
+
 (defn- make-scripts
   [scripts]
   (doseq [[res-id script] scripts]
@@ -132,4 +149,5 @@
   (make-sprites)
   (make-titles)
   (make-scripts (compile-screen-scripts))
-  (make-scripts (compile-sprite-scripts)))
+  (make-scripts (compile-sprite-scripts))
+  (make-scripts (compile-animation-scripts)))

@@ -1,0 +1,15 @@
+load image, "blob.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load image, "blob2.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load animation, "blob.scr"

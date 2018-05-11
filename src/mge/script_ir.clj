@@ -146,6 +146,14 @@
    [:ld :hl res-id]
    [:call spr/write-pattern]])
 
+(defn sprite-animation
+  [res-id]
+  [[:ld :hl res-id]
+   [:ld [:ix spr/+spr-anim+] :l]
+   [:ld [:ix (inc spr/+spr-anim+)] :h]
+   [:ld :a (fn [] (:page (get-label res-id)))]
+   [:ld [:ix (inc spr/+spr-anim-page+)] :h]])
+
 (defn sprite-pos
   [x y]
   [(load-arg x)
@@ -262,3 +270,22 @@
   (concat (push-args args)
           [[:call func]]
           (pop-args args)))
+
+(defn animation-end
+  []
+  [[:ld [:ix spr/+spr-anim+] 0]
+   [:ld [:ix (inc spr/+spr-anim+)] 0]
+   [:ret]])
+
+(defn animation-next-frame
+  []
+  [[:call spr/animation-next-frame]])
+
+(defn animation-load
+  [res-id]
+  [[:ld :hl res-id]
+   [:ld [:ix spr/+spr-anim+] :l]
+   [:ld [:ix (inc spr/+spr-anim+)] :h]
+   [:ld :a (fn [] (:page (get-label res-id)))]
+   [:ld [:ix (inc spr/+spr-anim-page+)] :a]
+   [:ret]])

@@ -1,0 +1,13 @@
+prog = (<nl>|<ws>)? op (<nl> op)* (<nl>|<ws>)?
+
+nl = #'[\n\r]+'
+ws = #'\s+'
+id = #'[a-zA-Z_][a-zA-Z_0-9]*'
+num = #'-?[0-9]+'
+str = <'"'> #'[^"]*' <'"'>
+comma = <ws>? <','> <ws>? 
+
+<op> = <ws>? (anim-load|load|next-frame)
+anim-load = <'load'> <ws> 'animation' <comma> str
+load = <'load'> <ws> ('image'|'title') <comma> str
+next-frame = <'next'> <ws> <'frame'>

@@ -6,7 +6,7 @@
             [mge.script-ir :refer :all]))
 
 
-;; ops
+;; script prog
 
 (def ^:dynamic *script-file* nil)
 
@@ -40,6 +40,26 @@
 
          :else nil))
 
+(defn- compile-load-ops
+  [op]
+  (match op
+         [:load "image" [:str s]]
+         [(sprite-image (make-sprite-id s)
+                        (make-sprite-color1-id s)
+                        (make-sprite-color2-id s))]
+
+         [:load "title" [:str s]]
+         [(load-title (make-title-pattern-id s)
+                      (make-title-color-id s))]
+
+         [:load "animation" [:str s]]
+         [(sprite-animation (make-animation-script-id s :update))]
+
+         [:anim-load "animation" [:str s]]
+         [(animation-load (make-animation-script-id s :update))]
+
+         :else nil))
+
 (defn- compile-misc-ops
   [op]
   (match op
@@ -60,14 +80,8 @@
                                        (keyword s))
                 args)]
 
-         [:load "image" [:str s]]
-         [(sprite-image (make-sprite-id s)
-                        (make-sprite-color1-id s)
-                        (make-sprite-color2-id s))]
-
-         [:load "title" [:str s]]
-         [(load-title (make-title-pattern-id s)
-                      (make-title-color-id s))]
+         [:next-frame]
+         [(animation-next-frame)]
 
          :else nil))
 
@@ -100,6 +114,7 @@
   [op]
   (doall
    (apply concat (or (compile-sprite-ops op)
+                     (compile-load-ops op)
                      (compile-misc-ops op)
                      (compile-if-ops op)
                      (throw (Exception. (str "Uknown func " op)))))))
@@ -117,27 +132,51 @@
            (concat (compile-ops ops)
                    (end)))]))
 
-(defn- compile-prog
+(defn- compile-script-prog
   [prog]
   (match prog
          [:prog & subs]
          (doall (into {} (map compile-sub subs)))))
 
 
-;; core
+;; animation prog
 
-(let [parser (insta/parser (io/resource "parser.bnf")
-                           :string-ci true)]
+(defn- compile-animation-prog
+  [prog]
+  (match prog
+         [:prog & ops]
+         (->> (concat (compile-ops ops)
+                      (animation-end))
+              vec
+              doall)))
+
+
+;; core
+(defn- make-parser
+  [parser file]
+  (let [s (parser (slurp file))]
+    (if (insta/failure? s)
+      (do (println "Error parsing script" (.getPath file) ": " (insta/get-failure s))
+          [:prog])
+      s)))
+
+(let [script    (insta/parser (io/resource "script.bnf") :string-ci true)
+      animation (insta/parser (io/resource "animation.bnf") :string-ci true)]
   (defn script-parser
     [file]
-    (let [s (parser (slurp file))]
-      (if (insta/failure? s)
-        (do (println "Error parsing script" (.getName file) ": " (insta/get-failure s))
-            [:prog])
-        s))))
+    (make-parser script file))
+  (defn animation-parser
+    [file]
+    (make-parser animation file)))
 
 (defn compile-script
   [file]
   (binding [*script-file* file]
     (let [p (script-parser file)]
-      (compile-prog p))))
+      (compile-script-prog p))))
+
+(defn compile-animation
+  [file]
+  (binding [*script-file* file]
+    (let [p (animation-parser file)]
+      (compile-animation-prog p))))

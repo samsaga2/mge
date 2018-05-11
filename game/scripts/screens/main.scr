@@ -1,10 +1,10 @@
 sub init
-    load title "grass.png"
-    new sprite "skeleton.scr"
-    new sprite "blob.scr", 239
-    new sprite "blob.scr", 223
-    new sprite "blob.scr", 207
-    new sprite "blob.scr", 191
-    new sprite "blob.scr", 175
+    load title, "grass.png"
+    new sprite, "skeleton.scr"
+    new sprite, "blob.scr", 239
+    new sprite, "blob.scr", 223
+    new sprite, "blob.scr", 207
+    new sprite, "blob.scr", 191
+    new sprite, "blob.scr", 175
     global0 = 0
 endsub
