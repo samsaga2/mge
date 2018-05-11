@@ -47,15 +47,12 @@
   [:ld :bc (dec (* +sprites-count+ +varsprites-count+))]
   [:ldir]
   ;; default values
-  [:ld :ix spr/spr-attributes]
+  [:ld :ix data]
   [:ld :de +varsprites-count+]
-  [:ld :b 32]
-  [:xor :a]
+  [:ld :b +sprites-count+]
   (label :loop
          [:ld [:ix +spr-y+] 192]
-         [:ld [:ix +spr-w+] 8]
-         [:ld [:ix +spr-h+] 8]
-         [:add 8]
+         [:ld [:ix +spr-color1+] 0]
          [:add :ix :de]
          [:djnz :loop])
   [:ret])
