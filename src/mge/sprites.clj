@@ -20,6 +20,7 @@
 (def +spr-h+ 7)
 (def +spr-anim+ 8)                       ; 2 bytes
 (def +spr-anim-page+ 10)
+(def +spr-local0+ 16)
 
 ;; sprites consts
 (def +flag-deleted+ 1)

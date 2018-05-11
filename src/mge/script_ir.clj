@@ -15,11 +15,27 @@
 (defn- get-localvar-index
   [id]
   (case id
-    "type"   spr/+spr-type+
-    "x"      spr/+spr-x+
-    "y"      spr/+spr-y+
-    "width"  spr/+spr-w+
-    "height" spr/+spr-h+
+    "type"    spr/+spr-type+
+    "x"       spr/+spr-x+
+    "y"       spr/+spr-y+
+    "width"   spr/+spr-w+
+    "height"  spr/+spr-h+
+    "local0"  spr/+spr-local0+
+    "local1"  (+ spr/+spr-local0+ 1)
+    "local2"  (+ spr/+spr-local0+ 2)
+    "local3"  (+ spr/+spr-local0+ 3)
+    "local4"  (+ spr/+spr-local0+ 4)
+    "local5"  (+ spr/+spr-local0+ 5)
+    "local6"  (+ spr/+spr-local0+ 6)
+    "local7"  (+ spr/+spr-local0+ 7)
+    "local8"  (+ spr/+spr-local0+ 8)
+    "local9"  (+ spr/+spr-local0+ 9)
+    "local10" (+ spr/+spr-local0+ 10)
+    "local11" (+ spr/+spr-local0+ 11)
+    "local12" (+ spr/+spr-local0+ 12)
+    "local13" (+ spr/+spr-local0+ 13)
+    "local14" (+ spr/+spr-local0+ 14)
+    "local15" (+ spr/+spr-local0+ 15)
     nil))
 
 (let [vars (->> (concat s/args s/globals)
