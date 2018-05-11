@@ -68,4 +68,4 @@
   (compile-resources)
   (build-asm-image-file "game.rom" :msx-konami5)
   (build-sym-file "game.sym")
-  (sh "openmsx" "-carta" "game.rom"))
+  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice"))
