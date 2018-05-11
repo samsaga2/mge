@@ -1,14 +1,16 @@
-prog = (<nl>|<ws>)? sub (<nl> sub)* (<nl>|<ws>)?
+prog = (<nl-comment>|<ws>)? sub (<nl-comment> sub)* (<nl-comment>|<ws>)?
 
 nl = #'[\n\r]+'
+comment = #'\s*\'[^\n\r]*[\n\r]+'
+nl-comment = (comment|nl)
 ws = #'\s+'
 id = #'[a-zA-Z_][a-zA-Z_0-9]*'
 num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
-sub = <'sub'> <ws> id <nl> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call) <nl>+
+sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
+<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call) <nl-comment>+
 
 <arg> = (id|num)
 
@@ -23,7 +25,7 @@ sprite-width = <'width'> <ws> arg
 sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
 
-if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl> <ws>? then)
+if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl-comment> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
 else = <'else'> op* <ws>? <'endif'>
 if-keydown = <'keydown'> <ws>? str

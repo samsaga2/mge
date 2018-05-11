@@ -3,7 +3,8 @@
             [clojure.java.io :as io]
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
-            [mge.script-ir :refer :all]))
+            [mge.script-ir :refer :all]
+            [clojure.string :as str]))
 
 
 ;; script prog
