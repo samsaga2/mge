@@ -9,7 +9,21 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
-<op> = <ws>? (anim-load|load|next-frame)
+<arg> = (id|num)
+
+<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops)
+
 anim-load = <'load'> <ws> 'animation' <comma> str
 load = <'load'> <ws> ('image'|'title') <comma> str
 next-frame = <'next'> <ws> <'frame'>
+
+<new-ops> = <'new'> <ws> (new-sprite)
+new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
+
+<sprite-ops> = (sprite-pos|sprite-move|sprite-type|sprite-width|sprite-height|sprite-delete)
+sprite-pos = <'pos'> <ws> arg <comma> arg
+sprite-move = <'move'> <ws> arg <comma> arg
+sprite-type = <'type'> <ws> arg
+sprite-width = <'width'> <ws> arg
+sprite-height = <'height'> <ws> arg
+sprite-delete = <'delete'>

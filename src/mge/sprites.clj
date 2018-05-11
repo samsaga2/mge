@@ -478,6 +478,6 @@
 
 (defasmproc update-sprites {:page :code}
   [:call update-table]
-  [:call update-deleted]
   [:call update-animations]
+  [:call update-deleted]
   [:jp update-attributes])
