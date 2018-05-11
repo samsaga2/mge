@@ -1,0 +1,28 @@
+type 0 ' to disable colisions
+load image, "expl1.png"
+next frame
+next frame
+next frame
+next frame
+load image, "expl2.png"
+next frame
+next frame
+next frame
+next frame
+load image, "expl3.png"
+next frame
+next frame
+next frame
+next frame
+load image, "expl4.png"
+next frame
+next frame
+next frame
+next frame
+load image, "expl5.png"
+next frame
+next frame
+next frame
+next frame
+delete
+new sprite, "missile.scr", 255

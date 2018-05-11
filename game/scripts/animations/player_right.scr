@@ -1,0 +1,29 @@
+load image, "player1.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load image, "player2.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load image, "player3.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load image, "player4.png"
+next frame
+next frame
+next frame
+next frame
+next frame
+next frame
+load animation, "player_right.scr"

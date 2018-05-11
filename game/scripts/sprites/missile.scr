@@ -1,15 +1,24 @@
 sub init
-    load animation, "blob.scr"
+    load image, "missile.png"
     type 2
     call random_y
     pos arg0, y
+
+    ' current state
+    ' 0 - normal
+    ' 1 - explosion
+    local0 = 0
 endsub
 
 sub update
+    if local0 = 1 then
+       return
+    endif
+
     if collide 3 then
-      delete
-      new sprite, "blob.scr", 255
-      return
+       local0 = 1
+       load animation, "explosion.scr"
+       return
     endif
 
     move -1, 0

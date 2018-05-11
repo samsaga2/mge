@@ -1,32 +1,60 @@
 sub init
-    load image, "skeleton.png"
+    load animation, "player_idle.scr"
     type 1
     width 6
     height 7
     pos 100, 100
+
+    ' current state
+    ' 0 - idle
+    ' 1 - walking
+    local0 = 0
 endsub
 
 sub update
+    ' local1 next player state
+    local1 = 0
+
+    ' move player
     if keydown "left" then
         if x > 0 then
             move -1, 0
+            local1 = 1
         endif
     endif
     if keydown "right" then
         if x < 239 then
             move 1, 0
+            local1 = 1
         endif
     endif
     if keydown "up" then
         if y > 0 then
             move 0, -1
+            local1 = 1
         endif
     endif
     if keydown "down" then
         if y < 175 then
             move 0, 1
+            local1 = 1
         endif
     endif
+
+    ' change current state
+    if local1 = 1 then
+       if local0 = 0 then
+          local0 = 1
+          load animation, "player_right.scr"
+       endif
+    else
+       if local0 = 1 then
+          local0 = 0
+          load animation, "player_idle.scr"
+       endif
+    endif
+
+    ' fire bullet
     if keypressed "space" then
         if global0 < 2 then
             new sprite, "bullet.scr", x, y
