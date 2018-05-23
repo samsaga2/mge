@@ -7,7 +7,8 @@
             [mge.script :as s]
             [mge.util :as u]
             [clj-z80.msx.image :refer [set-konami5-page]]
-            [clj-z80.image :refer [get-label]]))
+            [clj-z80.image :refer [get-label]]
+            [mge.music :as music]))
 
 
 ;; args
@@ -305,3 +306,13 @@
    [:ld :a (fn [] (:page (get-label res-id)))]
    [:ld [:ix (inc spr/+spr-anim-page+)] :a]
    [:ret]])
+
+(defn music-load
+  [res-id]
+  [[:ld :hl res-id]
+   [:ld :a (fn [] (:page (get-label res-id)))]
+   [:jp music/play-music]])
+
+(defn music-stop
+  [res-id]
+  [[:jp music/stop-music]])

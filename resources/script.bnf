@@ -10,7 +10,7 @@ str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call) <nl-comment>+
+<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop) <nl-comment>+
 
 <arg> = (id|num)
 
@@ -35,7 +35,8 @@ if-collide = <'collide'> <ws>? arg
 
 return = <'return'>
 call = <'call'> <ws> id <ws>? [<','> <ws>? arg]*
-load = <'load'> <ws> ('image'|'title'|'animation') <comma> str
+load = <'load'> <ws> ('image'|'title'|'animation'|'music') <comma> str
+music-stop = <'music'> <ws> <'stop'> 
 
 <assign> = (assign-val|assign-add|assign-sub)
 assign-val = id <ws>? <'='> <ws>? arg

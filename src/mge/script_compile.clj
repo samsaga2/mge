@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
-            [mge.script-ir :refer :all]
+            [mge.script-ir :as ir]
             [clojure.string :as str]))
 
 
@@ -17,47 +17,45 @@
   [op]
   (match op
          [:new-sprite [:str s] & args]
-         [(new-sprite (make-sprite-script-id s :init)
-                      (make-sprite-script-id s :update)
-                      args)]
+         [(ir/new-sprite (make-sprite-script-id s :init)
+                         (make-sprite-script-id s :update)
+                         args)]
 
          [:sprite-pos x y]
-         [(sprite-pos x y)]
+         [(ir/sprite-pos x y)]
 
          [:sprite-move x y]
-         [(sprite-move x y)]
+         [(ir/sprite-move x y)]
 
          [:sprite-type n]
-         [(sprite-type n)]
+         [(ir/sprite-type n)]
 
          [:sprite-width n]
-         [(sprite-width n)]
+         [(ir/sprite-width n)]
 
          [:sprite-height n]
-         [(sprite-height n)]
+         [(ir/sprite-height n)]
 
          [:sprite-delete]
-         [(sprite-delete)]
+         [(ir/sprite-delete)]
 
          :else nil))
 
 (defn- compile-load-ops
   [op]
   (match op
-         [:load "image" [:str s]]
-         [(sprite-image (make-sprite-id s)
-                        (make-sprite-color1-id s)
-                        (make-sprite-color2-id s))]
-
-         [:load "title" [:str s]]
-         [(load-title (make-title-pattern-id s)
-                      (make-title-color-id s))]
-
-         [:load "animation" [:str s]]
-         [(sprite-animation (make-animation-script-id s :update))]
+         [:load type [:str s]]
+         (case type
+           "image"     [(ir/sprite-image (make-sprite-id s)
+                                         (make-sprite-color1-id s)
+                                         (make-sprite-color2-id s))]
+           "title"     [(ir/load-title (make-title-pattern-id s)
+                                       (make-title-color-id s))]
+           "animation" [(ir/sprite-animation (make-animation-script-id s :update))]
+           "music"     [(ir/music-load (make-music-id s))])
 
          [:anim-load "animation" [:str s]]
-         [(animation-load (make-animation-script-id s :update))]
+         [(ir/animation-load (make-animation-script-id s :update))]
 
          :else nil))
 
@@ -65,24 +63,27 @@
   [op]
   (match op
          [:return]
-         [(return)]
+         [(ir/return)]
 
          [:assign-val id arg]
-         [(assign-val id arg)]
+         [(ir/assign-val id arg)]
 
          [:assign-add id arg1 arg2]
-         [(assign-add id arg1 arg2)]
+         [(ir/assign-add id arg1 arg2)]
 
          [:assign-sub id arg1 arg2]
-         [(assign-sub id arg1 arg2)]
+         [(ir/assign-sub id arg1 arg2)]
 
          [:call [:id s] & args]
-         [(call (make-sprite-script-id (.getName *script-file*)
-                                       (keyword s))
-                args)]
+         [(ir/call (make-sprite-script-id (.getName *script-file*)
+                                          (keyword s))
+                   args)]
 
          [:next-frame]
-         [(animation-next-frame)]
+         [(ir/animation-next-frame)]
+
+         [:music-stop]
+         [(ir/music-stop)]
 
          :else nil))
 
@@ -98,16 +99,16 @@
                        [(condfn (compile-ops then))]))]
     (match op
            [:if-ops [:if-keydown [:str key]] [:then & then]]
-           (compile-if (partial if-keydown key) then)
+           (compile-if (partial ir/if-keydown key) then)
 
            [:if-ops [:if-keypressed [:str key]] [:then & then]]
-           (compile-if (partial if-keypressed key) then)
+           (compile-if (partial ir/if-keypressed key) then)
 
            [:if-ops [:if-cmp id cmp n] [:then & then]]
-           (compile-if (partial if-cmp id cmp n) then)
+           (compile-if (partial ir/if-cmp id cmp n) then)
 
            [:if-ops [:if-collide n] [:then & then]]
-           (compile-if (partial if-collide n) then)
+           (compile-if (partial ir/if-collide n) then)
 
            :else nil)))
 
@@ -131,7 +132,7 @@
          [(keyword id)
           (doall
            (concat (compile-ops ops)
-                   (end)))]))
+                   (ir/end)))]))
 
 (defn- compile-script-prog
   [prog]
@@ -147,7 +148,7 @@
   (match prog
          [:prog & ops]
          (->> (concat (compile-ops ops)
-                      (animation-end))
+                      (ir/animation-end))
               vec
               doall)))
 

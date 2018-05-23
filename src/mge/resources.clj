@@ -6,8 +6,8 @@
             [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
             [mge.script-compile :as sc]
-            [clojure.string :as str]))
-
+            [clojure.string :as str])
+  (:import [java.io File FileInputStream]))
 
 
 (def script-pages [0 1 2])
@@ -43,6 +43,10 @@
 (defn list-title-files
   []
   (list-files "titles" ".png"))
+
+(defn list-music-files
+  []
+  (list-files "music" ".pt3"))
 
 
 ;; sprites
@@ -141,6 +145,24 @@
       (make-proc (make-title-color-id name) res-pages
                  [[:db colors]]))))
 
+;; music
+
+(defn- make-music
+  []
+  (doseq [file (list-music-files)]
+    (let [name (.getName file)
+          data (let [is  (FileInputStream. file)
+                     arr (byte-array (.length file))]
+                 incbin
+                 (.read is arr)
+                 (.close is)
+                 (vec arr))]
+      (println "Compiled music" name
+               (count data)
+               "bytes")
+      (make-proc (make-music-id name) res-pages
+                 [[:db data]]))))
+
 
 ;; core
 
@@ -148,6 +170,7 @@
   []
   (make-sprites)
   (make-titles)
+  (make-music)
   (make-scripts (compile-screen-scripts))
   (make-scripts (compile-sprite-scripts))
   (make-scripts (compile-animation-scripts)))

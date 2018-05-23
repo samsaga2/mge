@@ -9,7 +9,8 @@
             [mge.screens :as scr]
             [mge.script :as s]
             [mge.keys :as keys]
-            clj-z80.msx.image))
+            [mge.music :as music]
+            mge.image))
 
 (defasmbyte skip-frame)
 
@@ -23,6 +24,7 @@
   [:ld [sysvars/BDRCLR] :a]
   [:ld :a 2]
   [:call bios/CHGMOD]
+  [:call music/init-music]
   [:call s/init-scripts]
   [:call spr/init-sprites]
   [:call scr/init-screens]
@@ -32,6 +34,8 @@
   [:push :af]
   ;; save vdp status
   [:ld [spr/vdps0] :a]
+  ;; music
+  [:call music/update-music]
   ;; check skip frame
   [:ld :a [skip-frame]]
   [:or :a]
@@ -66,6 +70,6 @@
 (defn -main
   [& args]
   (compile-resources)
-  (build-asm-image-file "game.rom" :msx-konami5)
+  (build-asm-image-file "game.rom" :mge-konami5)
   (build-sym-file "game.sym")
   (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice"))

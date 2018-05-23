@@ -48,3 +48,8 @@
   ([filename func]
    (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
      (keyword (str "res-animscr-" base-name "-" (name func))))))
+
+(defn make-music-id
+  [filename]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-music-" base-name))))

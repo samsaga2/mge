@@ -11,11 +11,12 @@ comma = <ws>? <','> <ws>?
 
 <arg> = (id|num)
 
-<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops)
+<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop)
 
 anim-load = <'load'> <ws> 'animation' <comma> str
-load = <'load'> <ws> ('image'|'title') <comma> str
+load = <'load'> <ws> ('image'|'title'|'music') <comma> str
 next-frame = <'next'> <ws> <'frame'>
+music-stop = <'music'> <ws> <'stop'> 
 
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
