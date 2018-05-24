@@ -52,7 +52,8 @@
            "title"     [(ir/load-title (make-title-pattern-id s)
                                        (make-title-color-id s))]
            "animation" [(ir/sprite-animation (make-animation-script-id s :update))]
-           "music"     [(ir/music-load (make-music-id s))])
+           "music"     [(ir/music-load (make-music-id s))]
+           "sfx"       [(ir/sfx-load (make-sfx-id s))])
 
          [:anim-load "animation" [:str s]]
          [(ir/animation-load (make-animation-script-id s :update))]
@@ -84,6 +85,9 @@
 
          [:music-stop]
          [(ir/music-stop)]
+
+         [:sfx-play arg]
+         [(ir/sfx-play arg)]
 
          :else nil))
 

@@ -6,6 +6,7 @@ sub init
     height 2
     pos arg0, arg1
     move 6, 0
+    sfx play 0
 endsub
 
 sub update

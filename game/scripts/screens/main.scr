@@ -7,5 +7,6 @@ sub init
     new sprite, "missile.scr", 191
     new sprite, "missile.scr", 175
     load music, "oldskool.pt3"
-    global0 = 0
+    load sfx, "effects.afb"
+    global0 = 0 ' num of player bullets
 endsub

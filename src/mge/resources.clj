@@ -48,6 +48,10 @@
   []
   (list-files "music" ".pt3"))
 
+(defn list-sfx-files
+  []
+  (list-files "sfx" ".afb"))
+
 
 ;; sprites
 
@@ -151,16 +155,34 @@
   []
   (doseq [file (list-music-files)]
     (let [name (.getName file)
-          data (let [is  (FileInputStream. file)
-                     arr (byte-array (.length file))]
-                 incbin
-                 (.read is arr)
-                 (.close is)
+          data (let [arr (byte-array (.length file))]
+                 (doto (FileInputStream. file)
+                   (.skip 100)
+                   (.read arr)
+                   (.close))
                  (vec arr))]
       (println "Compiled music" name
                (count data)
                "bytes")
       (make-proc (make-music-id name) res-pages
+                 [[:db data]]))))
+
+
+;; sfx
+
+(defn- make-sfx
+  []
+  (doseq [file (list-sfx-files)]
+    (let [name (.getName file)
+          data (let [arr (byte-array (.length file))]
+                 (doto (FileInputStream. file)
+                   (.read arr)
+                   (.close))
+                 (vec arr))]
+      (println "Compiled sfx" name
+               (count data)
+               "bytes")
+      (make-proc (make-sfx-id name) res-pages
                  [[:db data]]))))
 
 
@@ -171,6 +193,7 @@
   (make-sprites)
   (make-titles)
   (make-music)
+  (make-sfx)
   (make-scripts (compile-screen-scripts))
   (make-scripts (compile-sprite-scripts))
   (make-scripts (compile-animation-scripts)))

@@ -53,3 +53,8 @@
   [filename]
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
     (keyword (str "res-music-" base-name))))
+
+(defn make-sfx-id
+  [filename]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-sfx-" base-name))))

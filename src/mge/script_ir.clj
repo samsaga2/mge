@@ -311,8 +311,20 @@
   [res-id]
   [[:ld :hl res-id]
    [:ld :a (fn [] (:page (get-label res-id)))]
-   [:jp music/play-music]])
+   [:call music/play-music]])
 
 (defn music-stop
   [res-id]
-  [[:jp music/stop-music]])
+  [[:call music/stop-music]])
+
+(defn sfx-load
+  [res-id]
+  [[:ld :hl res-id]
+   [:ld :a (fn [] (:page (get-label res-id)))]
+   [:call music/load-sfx]])
+
+(defn sfx-play
+  [n]
+  [(load-arg n)
+   [:ld :c 0]
+   [:call music/play-sfx]])
