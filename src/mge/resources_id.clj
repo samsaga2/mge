@@ -58,3 +58,8 @@
   [filename]
   (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
     (keyword (str "res-sfx-" base-name))))
+
+(defn make-tilemap-id
+  [filename func]
+  (let [base-name (subs filename 0 (.lastIndexOf filename "."))]
+    (keyword (str "res-tilemap-" base-name "-" (name func)))))

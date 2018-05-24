@@ -1,11 +1,11 @@
 (ns mge.resources
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.image :refer [set-label!]]
-            [mge.resources-id :refer :all]
-            [clojure.java.io :as io]
             [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
-            [mge.script-compile :as sc]
+            [mge.resources-tilemaps :refer [make-tilemap]]
+            [mge.script-compile :as sc][mge.resources-id :refer :all]
+            [clojure.java.io :as io]
             [clojure.string :as str])
   (:import [java.io File FileInputStream]))
 
@@ -51,6 +51,10 @@
 (defn list-sfx-files
   []
   (list-files "sfx" ".afb"))
+
+(defn list-tilemaps-files
+  []
+  (list-files "tilemaps" ".tmx"))
 
 
 ;; sprites
@@ -186,6 +190,14 @@
                  [[:db data]]))))
 
 
+;; tilemaps
+
+(defn- make-tilemaps
+  []
+  (doseq [file (list-tilemaps-files)]
+    (make-tilemap (.getPath file))))
+
+
 ;; core
 
 (defn compile-resources
@@ -194,6 +206,7 @@
   (make-titles)
   (make-music)
   (make-sfx)
+  (make-tilemaps)
   (make-scripts (compile-screen-scripts))
   (make-scripts (compile-sprite-scripts))
   (make-scripts (compile-animation-scripts)))
