@@ -1,5 +1,6 @@
 sub init
-    load title, "grass.png"
+    'load title, "grass.png"
+    load tilemap, "level1.tmx"
     new sprite, "player.scr"
     new sprite, "missile.scr", 239
     new sprite, "missile.scr", 223

@@ -14,7 +14,7 @@ comma = <ws>? <','> <ws>?
 <op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play)
 
 anim-load = <'load'> <ws> 'animation' <comma> str
-load = <'load'> <ws> ('image'|'title'|'music'|'sfx') <comma> str
+load = <'load'> <ws> ('image'|'title'|'music'|'sfx'|'animation') <comma> str
 next-frame = <'next'> <ws> <'frame'>
 music-stop = <'music'> <ws> <'stop'> 
 sfx-play = <'sfx'> <ws> <'play'> <ws> arg

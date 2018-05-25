@@ -35,7 +35,7 @@ if-collide = <'collide'> <ws>? arg
 
 return = <'return'>
 call = <'call'> <ws> id <ws>? [<','> <ws>? arg]*
-load = <'load'> <ws> ('image'|'title'|'animation'|'music'|'sfx') <comma> str
+load = <'load'> <ws> ('image'|'title'|'animation'|'music'|'sfx'|'tilemap') <comma> str
 music-stop = <'music'> <ws> <'stop'> 
 sfx-play = <'sfx'> <ws> <'play'> <ws> arg
 

@@ -1,6 +1,8 @@
 (ns mge.resources-tilemaps
   (:require [clojure.xml :as xml]
             [clojure.java.io :as io]
+            [clj-z80.image :refer [get-label]]
+
             [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
             [mge.resources-id :refer :all]
@@ -71,7 +73,11 @@
         w     (try-parse-int (get-attr layer :width))
         h     (try-parse-int (get-attr layer :height))
         data  (find-child-node layer :data)
-        cells (mapv try-parse-int (str/split (str/join "," (:content data)) #","))]
+        cells (str/join "" (map #(str/replace % #"(\n|\r|\s)+" "")
+                                (:content data)))
+        cells (->> (str/split cells #",")
+                   (map try-parse-int)
+                   (mapv dec))]
     (merge {:tile-width  (try-parse-int (get-attr m :tilewidth))
             :tile-height (try-parse-int (get-attr m :tileheight))
             :width       w
@@ -79,12 +85,11 @@
             :cells       cells}
            (load-tileset m filename))))
 
-
 ;; make tilemap
 
 (defn- make-tileset-image
   [tilemap filename]
-  (let [image-source (:tilemap tilemap)
+  (let [image-source      (:tilemap tilemap)
         [colors patterns] (convert-screen2 image-source :colors)
         patterns          (compress-lz77 patterns)
         colors            (compress-lz77 colors)]
@@ -109,38 +114,39 @@
 
 (defn- make-tileset-horizontal-cells
   [tilemap filename]
-  (let [w     (:width tilemap)
-        h     (:height tilemap)
-        cells (:cells tilemap)]
+  (let [w         (:width tilemap)
+        h         (:height tilemap)
+        cells     (:cells tilemap)
+        attr-id   (make-tilemap-id filename :attr)
+        lines-id  (make-tilemap-id filename :lines)
+        map-id    (make-tilemap-id filename :map)
+        lines     (mapv (fn [x]
+                          (mapv (fn [y]
+                                  (nth cells (+ x (* y w))))
+                                (range h)))
+                        (range w))
+        set-lines (distinct lines)
+        map-lines (mapv (fn [line]
+                          (fn []
+                            (+ (* (.indexOf set-lines line) h)
+                               (:address (get-label lines-id)))))
+                        lines)]
     (assert (< h 24))
-    (let [lines (distinct (mapv (fn [x]
-                                  (mapv (fn [y]
-                                          (nth cells (+ x (* y w))))
-                                        (range 0 h)))
-                                (range 0 w)))]
-      (assert (< (count lines) 256))
-      (let [map-lines (mapv (fn [x]
-                              (let [line (mapv (fn [y]
-                                                 (nth cells (+ x (* y w))))
-                                               (range 0 h))]
-                                (.indexOf lines line)))
-                            (range 0 w))]
-        (println "Compiled tilemap cells" filename
-                 (+ (* (count lines) h)
-                    w))
-        (make-proc (make-tilemap-id filename :attr) res-pages
-                   [(dw w h)])
-        (make-proc (make-tilemap-id filename :lines) res-pages
-                   [[:db (apply concat lines)]])
-        (make-proc (make-tilemap-id filename :map) res-pages
-                   [[:db map-lines]])))))
+    (assert (<= (* (count set-lines) h) 0x2000))
+    (println "Compiled tilemap cells" filename
+             (+ (* (count set-lines) h)
+                w))
+    (make-proc attr-id res-pages [(dw w h)])
+    (make-proc lines-id res-pages [[:db (apply concat set-lines)]])
+    (make-proc map-id res-pages [(apply dw map-lines)])))
 
 
 ;; core
 
 (defn make-tilemap
   [filename]
-  (let [tilemap (load-tilemap filename)]
+  (let [tilemap  (load-tilemap filename)
+        filename (.getName (io/file filename))]
     (assert (= 8 (:tile-width tilemap)))
     (assert (= 8 (:tile-height tilemap)))
     (make-tileset-image tilemap filename)

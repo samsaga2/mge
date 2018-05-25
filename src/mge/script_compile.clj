@@ -53,7 +53,12 @@
                                        (make-title-color-id s))]
            "animation" [(ir/sprite-animation (make-animation-script-id s :update))]
            "music"     [(ir/music-load (make-music-id s))]
-           "sfx"       [(ir/sfx-load (make-sfx-id s))])
+           "sfx"       [(ir/sfx-load (make-sfx-id s))]
+           "tilemap"   [(ir/tilemap-load (make-tilemap-id s :pattern)
+                                         (make-tilemap-id s :colors)
+                                         (make-tilemap-id s :attr)
+                                         (make-tilemap-id s :lines)
+                                         (make-tilemap-id s :map))])
 
          [:anim-load "animation" [:str s]]
          [(ir/animation-load (make-animation-script-id s :update))]

@@ -8,7 +8,8 @@
             [mge.util :as u]
             [clj-z80.msx.image :refer [set-konami5-page]]
             [clj-z80.image :refer [get-label]]
-            [mge.music :as music]))
+            [mge.music :as music]
+            [mge.tilemap :as tilemap]))
 
 
 ;; args
@@ -328,3 +329,27 @@
   [(load-arg n)
    [:ld :c 0]
    [:call music/play-sfx]])
+
+(defn tilemap-load
+  [patterns-id colors-id attrs-id lines-id map-id]
+  [[:di]
+   ;; name
+   [:call tilemap/clear-name]
+   ;; patterns
+   (set-konami5-page 3 (fn [] (:page (get-label patterns-id))))
+   [:ld :hl patterns-id]
+   [:call tilemap/load-patterns]
+   ;; colors
+   (set-konami5-page 3 (fn [] (:page (get-label colors-id))))
+   [:ld :hl colors-id]
+   [:call tilemap/load-colors]
+   ;; attrs
+   (set-konami5-page 3 (fn [] (:page (get-label attrs-id))))
+   [:ld :ix attrs-id]
+   [:call tilemap/load-attrs]
+   ;; map
+   [:ld :a (fn [] (:page (get-label lines-id)))]
+   [:ld :b (fn [] (:page (get-label map-id)))]
+   [:ld :ix map-id]
+   [:call tilemap/load-horizontal-map]
+   [:ei]])
