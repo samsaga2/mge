@@ -10,4 +10,13 @@ sub init
     load music, "oldskool.pt3"
     load sfx, "effects.afb"
     global0 = 0 ' num of player bullets
+    global1 = 0 ' scroll
+endsub
+
+sub update
+    global1 = global1 + 1
+    if global1 = 24 then
+       global1 = 0
+       scroll right
+    endif
 endsub

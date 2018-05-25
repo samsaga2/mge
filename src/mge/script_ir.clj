@@ -353,3 +353,12 @@
    [:ld :ix map-id]
    [:call tilemap/load-horizontal-map]
    [:ei]])
+
+(defn scroll-right
+  []
+  [[:call tilemap/scroll-right]])
+
+
+(defn scroll-left
+  []
+  [[:call tilemap/scroll-left]])

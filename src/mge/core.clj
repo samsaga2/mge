@@ -10,6 +10,7 @@
             [mge.script :as s]
             [mge.keys :as keys]
             [mge.music :as music]
+            [mge.tilemap :as tilemap]
             mge.image))
 
 (defasmbyte skip-frame)
@@ -43,6 +44,7 @@
   [:inc :a]
   [:ld [skip-frame] :a]
   ;; main loop
+  [:call tilemap/update-offscreen]
   [:call scr/update-screens]
   [:call spr/update-sprites]
   [:call keys/update-keys]

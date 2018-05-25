@@ -10,7 +10,7 @@ str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play) <nl-comment>+
+<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll) <nl-comment>+
 
 <arg> = (id|num)
 
@@ -43,3 +43,7 @@ sfx-play = <'sfx'> <ws> <'play'> <ws> arg
 assign-val = id <ws>? <'='> <ws>? arg
 assign-add = id <ws>? <'='> <ws>? arg <ws>? <'+'> <ws>? arg
 assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
+
+<scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
+scroll-right = <'right'>
+scroll-left = <'left'>

@@ -94,6 +94,12 @@
          [:sfx-play arg]
          [(ir/sfx-play arg)]
 
+         [:scroll-left]
+         [(ir/scroll-left)]
+
+         [:scroll-right]
+         [(ir/scroll-right)]
+
          :else nil))
 
 (defn- compile-if-ops

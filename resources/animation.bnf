@@ -11,7 +11,7 @@ comma = <ws>? <','> <ws>?
 
 <arg> = (id|num)
 
-<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play)
+<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play|scroll)
 
 anim-load = <'load'> <ws> 'animation' <comma> str
 load = <'load'> <ws> ('image'|'title'|'music'|'sfx') <comma> str
@@ -29,3 +29,7 @@ sprite-type = <'type'> <ws> arg
 sprite-width = <'width'> <ws> arg
 sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
+
+<scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
+scroll-right = <'right'>
+scroll-left = <'left'>

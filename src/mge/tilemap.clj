@@ -3,13 +3,21 @@
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sysvars :as sysvars]
             [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
-            [clj-z80.msx.image :refer [set-konami5-page]]))
+            [clj-z80.msx.image :refer [set-konami5-page]]
+            [mge.math :as math]))
 
 (defasmword tilemap-width)
 (defasmword tilemap-height)
 (defasmword tilemap-map)
 (defasmbyte page-lines)
 (defasmbyte page-map)
+(defasmvar offscreen (* 32 24))
+(defasmbyte dirty)
+
+(defasmproc init-tilemap {:page :code}
+  [:xor :a]
+  [:ld [dirty] :a]
+  [:ret])
 
 (defasmproc load-patterns {:page :code}
   ;; HL=patterns
@@ -77,9 +85,76 @@
   [:ld [tilemap-height] :hl]
   [:ret])
 
+
+(defasmproc draw-horizontal-map {:page :code}
+  ;; a=lines-page b=map-page iy=map-addr
+  [:ld :a 1]
+  [:ld [dirty] :a]
+
+  ;; save map addr
+  [:ld :hl tilemap-map]
+  [:ld :a [:hl]]
+  [:ld :iyl :a]
+  [:inc :hl]
+  [:ld :a [:hl]]
+  [:ld :iyh :a]
+
+  ;; write horizontal lines
+  [:ld :hl offscreen]
+  [:ld :b 32]
+  (label :x
+         [:push :hl]
+         [:push :bc]
+
+         ;; get line addr
+         (set-konami5-page 3 [page-map])
+         [:ld :e [:iy 0]]
+         [:ld :d [:iy 1]]
+         [:inc :iy]
+         [:inc :iy]
+
+         ;; write vertical line
+         (set-konami5-page 3 [page-lines])
+         [:ld :a [tilemap-height]]
+         [:ld :b :a]
+         (label :y
+                [:ld :a [:de]]
+                [:inc :de]
+                [:ld [:hl] :a]
+
+                [:push :de]
+                [:ld :de 32]
+                [:add :hl :de]
+                [:pop :de]
+                [:djnz :y])
+
+         [:pop :bc]
+         [:pop :hl]
+         [:inc :hl]
+         [:djnz :x])
+  [:ret])
+
+(defasmproc update-offscreen {:page :code}
+  [:ld :a [dirty]]
+  [:or :a]
+  [:ret :z]
+  [:xor :a]
+  [:ld [dirty] :a]
+
+  ;; bc=32*height
+  [:ld :a [tilemap-height]]
+  [:ld :l :a]
+  [:ld :h 0]
+  (math/mul-hl-by-pow2 32)
+  [:push :hl]
+  [:pop :bc]
+  ;; draw offscreen
+  [:ld :hl offscreen]
+  [:ld :de 0x1800]
+  [:jp bios/LDIRVM])
+
 (defasmproc load-horizontal-map {:page :code}
   ;; a=lines-page b=map-page ix=map-addr
-  [:di]
 
   ;; save pages
   [:ld [page-lines] :a]
@@ -93,41 +168,28 @@
   [:ld :h :a]
   [:ld [tilemap-map] :hl]
 
-  ;; write horizontal lines
-  [:ld :hl 0x1800]
-  [:ld :b 32]
-  (label :x
-         [:push :hl]
-         [:push :bc]
+  [:jp draw-horizontal-map])
 
-         ;; get line addr
-         (set-konami5-page 3 [page-map])
-         [:ld :e [:ix 0]]
-         [:ld :d [:ix 1]]
-         [:inc :ix]
-         [:inc :ix]
+(defasmproc scroll-left {:page :code}
+  [:ld :hl tilemap-map]
+  [:ld :e [:hl]]
+  [:inc :hl]
+  [:ld :d [:hl]]
+  [:dec :de]
+  [:dec :de]
+  [:ld [:hl] :d]
+  [:dec :hl]
+  [:ld [:hl] :e]
+  [:jp draw-horizontal-map])
 
-         ;; write vertical line
-         (set-konami5-page 3 [page-lines])
-         [:ld :a [tilemap-height]]
-         [:ld :b :a]
-         (label :y
-                [:call bios/SETWRT]
-
-                [:ld :a [:de]]
-                [:inc :de]
-                [:out [0x98] :a]
-
-                [:push :de]
-                [:ld :de 32]
-                [:add :hl :de]
-                [:pop :de]
-                [:djnz :y])
-
-         [:pop :bc]
-         [:pop :hl]
-         [:inc :hl]
-         [:djnz :x])
-
-  [:ei]
-  [:ret])
+(defasmproc scroll-right {:page :code}
+  [:ld :hl tilemap-map]
+  [:ld :e [:hl]]
+  [:inc :hl]
+  [:ld :d [:hl]]
+  [:inc :de]
+  [:inc :de]
+  [:ld [:hl] :d]
+  [:dec :hl]
+  [:ld [:hl] :e]
+  [:jp draw-horizontal-map])
