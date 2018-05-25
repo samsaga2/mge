@@ -457,14 +457,17 @@
 (defasmproc write-pattern {:page :code}
   ;; spr-selected
   ;; HL=pattern addr
-  [[:ld :a [spr-selected]]
+  [[:di]
+   [:ld :a [spr-selected]]
    [:add :a]
    [:push :hl]
    [:call bios/CALPAT]
    [:ex :de :hl]
    [:ld :bc 64]
    [:pop :hl]
-   [:jp bios/LDIRVM]])
+   [:call bios/LDIRVM]
+   [:ei]
+   [:ret]])
 
 
 ;; core

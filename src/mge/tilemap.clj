@@ -140,6 +140,7 @@
   [:ret :z]
   [:xor :a]
   [:ld [dirty] :a]
+  [:di]
 
   ;; bc=32*height
   [:ld :a [tilemap-height]]
@@ -151,7 +152,9 @@
   ;; draw offscreen
   [:ld :hl offscreen]
   [:ld :de 0x1800]
-  [:jp bios/LDIRVM])
+  [:call bios/LDIRVM]
+  [:ei]
+  [:ret])
 
 (defasmproc load-horizontal-map {:page :code}
   ;; a=lines-page b=map-page ix=map-addr
