@@ -4,20 +4,18 @@
             [clj-z80.msx.lib.sysvars :as sysvars]
             [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
             [clj-z80.msx.image :refer [set-konami5-page]]
+            [mge.offscreen :as off]
             [mge.math :as math]))
+
 
 (defasmword tilemap-width)
 (defasmword tilemap-height)
 (defasmword tilemap-map)
 (defasmbyte page-lines)
 (defasmbyte page-map)
-(defasmvar offscreen (* 32 24))
-(defasmbyte dirty)
 
-(defasmproc init-tilemap {:page :code}
-  [:xor :a]
-  [:ld [dirty] :a]
-  [:ret])
+
+;; load tiles
 
 (defasmproc load-patterns {:page :code}
   ;; HL=patterns
@@ -86,10 +84,12 @@
   [:ret])
 
 
+;; horizontal scroll
+
 (defasmproc draw-horizontal-map {:page :code}
   ;; a=lines-page b=map-page iy=map-addr
   [:ld :a 1]
-  [:ld [dirty] :a]
+  [:ld [off/dirty] :a]
 
   ;; save map addr
   [:ld :hl tilemap-map]
@@ -100,7 +100,7 @@
   [:ld :iyh :a]
 
   ;; write horizontal lines
-  [:ld :hl offscreen]
+  [:ld :hl off/offscreen]
   [:ld :b 32]
   (label :x
          [:push :hl]
@@ -132,28 +132,6 @@
          [:pop :hl]
          [:inc :hl]
          [:djnz :x])
-  [:ret])
-
-(defasmproc update-offscreen {:page :code}
-  [:ld :a [dirty]]
-  [:or :a]
-  [:ret :z]
-  [:xor :a]
-  [:ld [dirty] :a]
-  [:di]
-
-  ;; bc=32*height
-  [:ld :a [tilemap-height]]
-  [:ld :l :a]
-  [:ld :h 0]
-  (math/mul-hl-by-pow2 32)
-  [:push :hl]
-  [:pop :bc]
-  ;; draw offscreen
-  [:ld :hl offscreen]
-  [:ld :de 0x1800]
-  [:call bios/LDIRVM]
-  [:ei]
   [:ret])
 
 (defasmproc load-horizontal-map {:page :code}

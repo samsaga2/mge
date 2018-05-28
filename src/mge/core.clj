@@ -11,6 +11,7 @@
             [mge.keys :as keys]
             [mge.music :as music]
             [mge.tilemap :as tilemap]
+            [mge.offscreen :as off]
             mge.image))
 
 (defasmbyte skip-frame)
@@ -26,6 +27,7 @@
   [:ld :a 2]
   [:call bios/CHGMOD]
   [:call music/init-music]
+  [:call off/init-offscreen]
   [:call s/init-scripts]
   [:call spr/init-sprites]
   [:call scr/init-screens]
@@ -44,7 +46,7 @@
   [:inc :a]
   [:ld [skip-frame] :a]
   ;; main loop
-  [:call tilemap/update-offscreen]
+  [:call off/update-offscreen]
   [:call scr/update-screens]
   [:call spr/update-sprites]
   [:call keys/update-keys]
