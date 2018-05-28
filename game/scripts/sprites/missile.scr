@@ -17,7 +17,7 @@ sub update
 
     if collide 3 then
        local0 = 1
-       load animation, "explosion.scr"
+       load animation, "missile_explosion.scr"
        return
     endif
 

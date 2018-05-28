@@ -5,13 +5,16 @@ sub init
     height 7
     pos 100, 100
 
-    ' current state
-    ' 0 - idle
-    ' 1 - walking
-    local0 = 0
+    local0 = 0 ' current state (0-idle, 1-walking)
+    ' local1 next player state
+    local2 = 0 ' 1 if dead player
 endsub
 
 sub update
+    if local2 = 1 then
+       return
+    endif
+
     ' local1 next player state
     local1 = 0
 
@@ -60,4 +63,33 @@ sub update
             new sprite, "bullet.scr", x, y
         endif
     endif
+
+    ' player missile collision
+    if collide 2 then
+       call dead
+       return
+    endif
+
+    ' player tile collision
+    if tile 4, 8 = 1 then
+        call dead
+        return
+    endif
+    if tile 12, 8 = 1 then
+        call dead
+        return
+    endif
+    if tile 8, 4 = 1 then
+        call dead
+        return
+    endif
+    if tile 8, 12 = 1 then
+        call dead
+        return
+    endif
+endsub
+
+sub dead
+    load animation, "player_dead.scr"
+    local2 = 1
 endsub
