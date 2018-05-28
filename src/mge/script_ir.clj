@@ -247,6 +247,22 @@
               [:jp :z l]])
            then else)))
 
+(defn if-tile
+  ([offset-x offset-y type then]
+   (if-tile offset-x offset-y type then nil))
+  ([offset-x offset-y type then else]
+   (gen-if (fn [l]
+             [(load-arg offset-x :b)
+              (load-arg offset-y :c)
+
+              [:call spr/get-tile]
+              [:ld :b :a]
+
+              (load-arg type)
+              [:cp :b]
+              [:jp :nz l]])
+           then else)))
+
 (defn load-title
   [patterns-id colors-id]
   [[:di]
@@ -331,7 +347,7 @@
    [:call music/play-sfx]])
 
 (defn tilemap-load
-  [patterns-id colors-id attrs-id lines-id map-id]
+  [patterns-id colors-id attrs-id lines-id map-id types-id]
   [[:di]
    ;; name
    [:call tilemap/clear-name]
@@ -350,6 +366,8 @@
    ;; map
    [:ld :a (fn [] (:page (get-label lines-id)))]
    [:ld :b (fn [] (:page (get-label map-id)))]
+   [:ld :c (fn [] (:page (get-label types-id)))]
+   [:ld :hl types-id]
    [:ld :ix map-id]
    [:call tilemap/load-horizontal-map]
    [:ei]])
@@ -357,7 +375,6 @@
 (defn scroll-right
   []
   [[:call tilemap/scroll-right]])
-
 
 (defn scroll-left
   []

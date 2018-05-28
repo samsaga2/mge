@@ -11,8 +11,10 @@
 (defasmword tilemap-width)
 (defasmword tilemap-height)
 (defasmword tilemap-map)
+(defasmword tilemap-types)
 (defasmbyte page-lines)
 (defasmbyte page-map)
+(defasmbyte page-types)
 
 
 ;; load tiles
@@ -135,12 +137,17 @@
   [:ret])
 
 (defasmproc load-horizontal-map {:page :code}
-  ;; a=lines-page b=map-page ix=map-addr
+  ;; a=lines-page b=map-page c=types-page ix=map-addr hl=types-addr
 
   ;; save pages
   [:ld [page-lines] :a]
   [:ld :a :b]
   [:ld [page-map] :a]
+  [:ld :a :c]
+  [:ld [page-types] :a]
+
+  ;; save types addr
+  [:ld [tilemap-types] :hl]
 
   ;; save map addr
   [:ld :a :ixl]
@@ -174,3 +181,37 @@
   [:dec :hl]
   [:ld [:hl] :e]
   [:jp draw-horizontal-map])
+
+
+;; tiles
+
+(defasmproc get-tile {:page :code}
+  ;; in b=pixel-x c=pixel-y out tile=a
+
+  ;; de=y/8*32
+  [:ld :a :c]
+  [:and (- 255 7)]
+  [:ld :l :a]
+  [:ld :h 0]
+  (math/mul-hl-by-pow2 4)
+  [:ex :de :hl]
+
+  ;; hl=x/8
+  [:ld :l :b]
+  [:ld :h 0]
+  (math/div-hl-by-pow2 8)
+  [:add :hl :de]
+
+  ;; hl=offscreen+y/8*32+x/8
+  [:ld :de off/offscreen]
+  [:add :hl :de]
+
+  ;; get type
+  (set-konami5-page 3 [page-map])
+  [:ld :e [:hl]]
+  [:ld :d 0]
+  [:ld :hl [tilemap-types]]
+  [:add :hl :de]
+  [:ld :a [:hl]]
+
+  [:ret])

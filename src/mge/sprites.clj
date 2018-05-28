@@ -4,9 +4,10 @@
             [clj-z80.msx.image :refer [set-konami5-page]]
             [clj-z80.msx.lib.sprites :as spr]
             [clj-z80.image :refer [get-label]]
+            [clj-z80.msx.lib.sysvars :as sysvars]
             [mge.util :as u]
             [mge.math :as m]
-            [clj-z80.msx.lib.sysvars :as sysvars]))
+            [mge.tilemap :as tilemap]))
 
 
 ;; sprite struct
@@ -468,6 +469,21 @@
    [:call bios/LDIRVM]
    [:ei]
    [:ret]])
+
+
+;; tile
+
+(defasmproc get-tile {:page :code}
+  ;; in b=offset-x c=offset-y out type=a
+  [:ld :a [:ix +spr-x+]]
+  [:add :b]
+  [:ld :b :a]
+
+  [:ld :a [:ix +spr-y+]]
+  [:add :c]
+  [:ld :c :a]
+
+  [:jp tilemap/get-tile])
 
 
 ;; core

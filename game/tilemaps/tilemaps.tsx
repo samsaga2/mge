@@ -16,4 +16,9 @@
    <property name="type" type="int" value="1"/>
   </properties>
  </tile>
+ <tile id="8">
+  <properties>
+   <property name="type" type="int" value="1"/>
+  </properties>
+ </tile>
 </tileset>

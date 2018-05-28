@@ -58,7 +58,8 @@
                                          (make-tilemap-id s :colors)
                                          (make-tilemap-id s :attr)
                                          (make-tilemap-id s :lines)
-                                         (make-tilemap-id s :map))])
+                                         (make-tilemap-id s :map)
+                                         (make-tilemap-id s :types))])
 
          [:anim-load "animation" [:str s]]
          [(ir/animation-load (make-animation-script-id s :update))]
@@ -124,6 +125,9 @@
 
            [:if-ops [:if-collide n] [:then & then]]
            (compile-if (partial ir/if-collide n) then)
+
+           [:if-ops [:if-tile x y type] [:then & then]]
+           (compile-if (partial ir/if-tile x y type) then)
 
            :else nil)))
 

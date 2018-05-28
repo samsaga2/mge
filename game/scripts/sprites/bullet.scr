@@ -11,16 +11,24 @@ endsub
 
 sub update
     if x >= 252 then
-        global0 = global0 - 1
-        delete
+        call kill_bullet
         return
     endif
 
     if collide 2 then
-        global0 = global0 - 1
-        delete
+        call kill_bullet
+        return
+    endif
+
+    if tile 8, 8 = 1 then
+        call kill_bullet
         return
     endif
 
     move 4, 0
+endsub
+
+sub kill_bullet
+    global0 = global0 - 1
+    delete
 endsub

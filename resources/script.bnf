@@ -25,13 +25,14 @@ sprite-width = <'width'> <ws> arg
 sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
 
-if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp) <ws> <'then'> <nl-comment> <ws>? then)
+if-ops = (<'if'> <ws> (if-keydown|if-keypressed|if-collide|if-cmp|if-tile) <ws> <'then'> <nl-comment> <ws>? then)
 then = op* <ws>? (<'endif'>|else)
 else = <'else'> op* <ws>? <'endif'>
 if-keydown = <'keydown'> <ws>? str
 if-keypressed = <'keypressed'> <ws>? str
 if-cmp = arg <ws>? ('='|'<>'|'<'|'>'|'>='|'<=') <ws>? arg
 if-collide = <'collide'> <ws>? arg
+if-tile = <'tile'> <ws> arg <comma> arg <ws>? <'='> <ws>? arg
 
 return = <'return'>
 call = <'call'> <ws> id <ws>? [<','> <ws>? arg]*
