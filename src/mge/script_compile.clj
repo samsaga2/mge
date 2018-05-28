@@ -59,7 +59,9 @@
                                          (make-tilemap-id s :attr)
                                          (make-tilemap-id s :lines)
                                          (make-tilemap-id s :map)
-                                         (make-tilemap-id s :types))])
+                                         (make-tilemap-id s :types))]
+           "screen" [(ir/screen-load (make-screen-script-id s :init)
+                                     (make-screen-script-id s :update))])
 
          [:anim-load "animation" [:str s]]
          [(ir/animation-load (make-animation-script-id s :update))]

@@ -1,15 +1,17 @@
 (ns mge.script-ir
-  (:require [mge.sprites :as spr]
-            [mge.keys :as keys]
-            [mge.title :as title]
-            [clj-z80.asm :refer :all :refer-macros :all]
-            [clojure.string :as str]
-            [mge.script :as s]
-            [mge.util :as u]
+  (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.image :refer [set-konami5-page]]
             [clj-z80.image :refer [get-label]]
+            [clj-z80.msx.lib.bios :as bios]
+            [clojure.string :as str]
+            [mge.sprites :as spr]
+            [mge.keys :as keys]
+            [mge.title :as title]
+            [mge.script :as s]
+            [mge.util :as u]
             [mge.music :as music]
-            [mge.tilemap :as tilemap]))
+            [mge.tilemap :as tilemap]
+            [mge.screens :as scr]))
 
 
 ;; args
@@ -265,14 +267,11 @@
 
 (defn load-title
   [patterns-id colors-id]
-  [[:di]
-   (set-konami5-page 3 (fn [] (:page (get-label patterns-id))))
+  [[:ld :a (fn [] (:page (get-label patterns-id)))]
    [:ld :hl patterns-id]
-   [:call title/load-patterns]
-   (set-konami5-page 3 (fn [] (:page (get-label colors-id))))
-   [:ld :hl colors-id]
-   [:call title/load-colors]
-   [:ei]])
+   [:ld :b (fn [] (:page (get-label colors-id)))]
+   [:ld :de colors-id]
+   [:call title/load-title]])
 
 (defn return
   []
@@ -348,9 +347,9 @@
 
 (defn tilemap-load
   [patterns-id colors-id attrs-id lines-id map-id types-id]
-  [[:di]
-   ;; name
+  [;; name
    [:call tilemap/clear-name]
+   [:di]
    ;; patterns
    (set-konami5-page 3 (fn [] (:page (get-label patterns-id))))
    [:ld :hl patterns-id]
@@ -379,3 +378,9 @@
 (defn scroll-left
   []
   [[:call tilemap/scroll-left]])
+
+(defn screen-load
+  [init-id update-id]
+  [[:ld :hl init-id]
+   [:ld :de update-id]
+   [:call scr/load-screen]])

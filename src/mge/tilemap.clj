@@ -5,7 +5,8 @@
             [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
             [clj-z80.msx.image :refer [set-konami5-page]]
             [mge.offscreen :as off]
-            [mge.math :as math]))
+            [mge.math :as math]
+            [mge.vdp :as vdp]))
 
 
 (defasmword tilemap-width)
@@ -24,7 +25,7 @@
   [:push :hl]
   [:push :hl]
   [:ld :hl (* 32 8 8 0)]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:call uncompress-lz77-to-vram]
   [:pop :hl]
@@ -32,14 +33,14 @@
   [:push :hl]
   [:push :hl]
   [:ld :hl (* 32 8 8 1)]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:call uncompress-lz77-to-vram]
   [:pop :hl]
 
   [:push :hl]
   [:ld :hl (* 32 8 8 2)]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:jp uncompress-lz77-to-vram])
 
@@ -48,7 +49,7 @@
   [:push :hl]
   [:push :hl]
   [:ld :hl (+ 0x2000 (* 32 8 8 0))]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:call uncompress-lz77-to-vram]
   [:pop :hl]
@@ -56,14 +57,14 @@
   [:push :hl]
   [:push :hl]
   [:ld :hl (+ 0x2000 (* 32 8 8 1))]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:call uncompress-lz77-to-vram]
   [:pop :hl]
 
   [:push :hl]
   [:ld :hl (+ 0x2000 (* 32 8 8 2))]
-  [:call bios/SETWRT]
+  [:call vdp/set-write-addr]
   [:pop :hl]
   [:jp uncompress-lz77-to-vram])
 

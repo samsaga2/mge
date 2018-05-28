@@ -1,22 +1,9 @@
 sub init
-    'load title, "grass.png"
-    load tilemap, "level1.tmx"
-    new sprite, "player.scr"
-    new sprite, "missile.scr", 239
-    new sprite, "missile.scr", 223
-    new sprite, "missile.scr", 207
-    new sprite, "missile.scr", 191
-    new sprite, "missile.scr", 175
-    load music, "oldskool.pt3"
-    load sfx, "effects.afb"
-    global0 = 0 ' num of player bullets
-    global1 = 0 ' scroll
+    load title, "title.png"
 endsub
 
 sub update
-    global1 = global1 + 1
-    if global1 = 24 then
-       global1 = 0
-       scroll right
+    if keypressed "space" then
+       load screen, "game.scr"
     endif
 endsub

@@ -24,3 +24,8 @@ next frame
 next frame
 next frame
 pos 0, 192
+next frame
+next frame
+next frame
+next frame
+load screen, "main.scr"
