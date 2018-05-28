@@ -37,6 +37,13 @@
   (try (Integer. i)
        (catch Exception e 0)))
 
+(defn- find-property-node
+  [m name]
+  (first
+   (filter #(and (= (:tag %) :property)
+                 (= (get-attr % :name) name))
+           (:content (find-child-node m :properties)))))
+
 
 ;; load tilemap
 
@@ -45,11 +52,7 @@
   (let [types (->> (find-child-nodes m :tile)
                    (map (fn [n]
                           (let [id   (get-attr n :id)
-                                type (get-attr (first
-                                                (filter #(and (= (:tag %) :property)
-                                                              (= (get-attr % :name) "type"))
-                                                        (:content (find-child-node n :properties))))
-                                               :value)]
+                                type (get-attr (find-property-node n "type") :value)]
                             [(try-parse-int id)
                              (try-parse-int type)])))
                    (into {}))]
@@ -68,20 +71,22 @@
 
 (defn load-tilemap
   [filename]
-  (let [m     (xml/parse filename)
-        layer (find-child-node m :layer)
-        w     (try-parse-int (get-attr layer :width))
-        h     (try-parse-int (get-attr layer :height))
-        data  (find-child-node layer :data)
-        cells (str/join "" (map #(str/replace % #"(\n|\r|\s)+" "")
-                                (:content data)))
-        cells (->> (str/split cells #",")
-                   (map try-parse-int)
-                   (mapv dec))]
+  (let [m         (xml/parse filename)
+        direction (get-attr (find-property-node m "direction") :value)
+        layer     (find-child-node m :layer)
+        w         (try-parse-int (get-attr layer :width))
+        h         (try-parse-int (get-attr layer :height))
+        data      (find-child-node layer :data)
+        cells     (str/join "" (map #(str/replace % #"(\n|\r|\s)+" "")
+                                    (:content data)))
+        cells     (->> (str/split cells #",")
+                       (map try-parse-int)
+                       (mapv dec))]
     (merge {:tile-width  (try-parse-int (get-attr m :tilewidth))
             :tile-height (try-parse-int (get-attr m :tileheight))
             :width       w
             :height      h
+            :direction   direction
             :cells       cells}
            (load-tileset m filename))))
 
@@ -147,6 +152,7 @@
   [filename]
   (let [tilemap  (load-tilemap filename)
         filename (.getName (io/file filename))]
+    (assert (= "horizontal" (:direction tilemap)))
     (assert (= 8 (:tile-width tilemap)))
     (assert (= 8 (:tile-height tilemap)))
     (make-tileset-image tilemap filename)

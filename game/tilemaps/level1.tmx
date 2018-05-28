@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" tiledversion="1.1.5" orientation="orthogonal" renderorder="right-down" width="256" height="23" tilewidth="8" tileheight="8" infinite="0" nextobjectid="1">
+ <properties>
+  <property name="direction" value="horizontal"/>
+ </properties>
  <tileset firstgid="1" source="tilemaps.tsx"/>
  <layer name="Capa de Patrones 1" width="256" height="23">
   <data encoding="csv">
