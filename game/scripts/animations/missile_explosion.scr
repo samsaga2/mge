@@ -1,27 +1,37 @@
 type 0 ' to disable colisions
 load image, "expl1.png"
+move -1, 0
 next frame
 next frame
+move -1, 0
 next frame
 next frame
 load image, "expl2.png"
+move -1, 0
 next frame
 next frame
+move -1, 0
 next frame
 next frame
 load image, "expl3.png"
+move -1, 0
 next frame
 next frame
+move -1, 0
 next frame
 next frame
 load image, "expl4.png"
+move -1, 0
 next frame
 next frame
+move -1, 0
 next frame
 next frame
 load image, "expl5.png"
+move -1, 0
 next frame
 next frame
+move -1, 0
 next frame
 next frame
 delete
