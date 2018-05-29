@@ -29,6 +29,7 @@
   [:call off/init-offscreen]
   [:call spr/init-sprites]
   [:call keys/init-keys]
+  [:call spr/update-attributes]
   [:pop :hl]
   [:call u/call-hl]
   [:pop :hl]
