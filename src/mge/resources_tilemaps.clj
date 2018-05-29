@@ -136,7 +136,7 @@
                             (+ (* (.indexOf set-lines line) h)
                                (:address (get-label lines-id)))))
                         lines)]
-    (assert (< h 24))
+    (assert (<= h 24))
     (assert (<= (* (count set-lines) h) 0x2000))
     (println "Compiled tilemap cells" filename
              (+ (* (count set-lines) h)
