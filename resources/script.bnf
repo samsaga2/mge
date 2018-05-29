@@ -10,7 +10,7 @@ str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll) <nl-comment>+
+<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str) <nl-comment>+
 
 <arg> = (id|num)
 
@@ -48,3 +48,5 @@ assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
 <scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
 scroll-right = <'right'>
 scroll-left = <'left'>
+set-tile = <'set'> <ws> <'tile'> <ws> arg <comma> arg <comma> arg
+print-str = <'print'> <ws> arg <comma> arg <comma> str

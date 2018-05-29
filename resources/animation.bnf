@@ -11,7 +11,7 @@ comma = <ws>? <','> <ws>?
 
 <arg> = (id|num)
 
-<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play|scroll)
+<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play|scroll|set-tile|print-str)
 
 anim-load = <'load'> <ws> 'animation' <comma> str
 load = <'load'> <ws> ('image'|'title'|'music'|'sfx'|'screen') <comma> str
@@ -33,3 +33,5 @@ sprite-delete = <'delete'>
 <scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
 scroll-right = <'right'>
 scroll-left = <'left'>
+set-tile = <'set'> <ws> <'tile'> <ws> arg <comma> arg <comma> arg
+print-str = <'print'> <ws> arg <comma> arg <comma> str

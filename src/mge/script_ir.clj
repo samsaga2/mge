@@ -11,7 +11,8 @@
             [mge.util :as u]
             [mge.music :as music]
             [mge.tilemap :as tilemap]
-            [mge.screens :as scr]))
+            [mge.screens :as scr]
+            [mge.offscreen :as off]))
 
 
 ;; args
@@ -384,3 +385,22 @@
   [[:ld :hl init-id]
    [:ld :de update-id]
    [:call scr/load-screen]])
+
+(defn set-tile
+  [x y n]
+  [(load-arg n :c)
+   (load-arg y :b)
+   (load-arg x :a)
+   [:call off/set-tile]])
+
+(defn print-str
+  [x y str]
+  (let [str-label  (keyword (gensym))
+        next-label (keyword (gensym))]
+    [[:ld :de str-label]
+     (load-arg y :b)
+     (load-arg x :a)
+     [:call off/write-print]
+     [:jr next-label]
+     (label str-label (db str) (db 0))
+     (label next-label)]))

@@ -103,6 +103,12 @@
          [:scroll-right]
          [(ir/scroll-right)]
 
+         [:set-tile x y n]
+         [(ir/set-tile x y n)]
+
+         [:print-str x y [:str str]]
+         [(ir/print-str x y str)]
+
          :else nil))
 
 (defn- compile-if-ops

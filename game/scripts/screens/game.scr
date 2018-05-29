@@ -10,6 +10,8 @@ sub init
     load sfx, "effects.afb"
     global0 = 0 ' num of player bullets
     global1 = 0 ' scroll
+    print 1, 23, "SCORE 000000"
+    print 25, 23, "LIVE 3"
 endsub
 
 sub update
