@@ -6,18 +6,6 @@
             [clj-z80.msx.image :refer [set-konami5-page]]
             [mge.vdp :as vdp]))
 
-(defasmproc clear-name {:page :code}
-  [:ld :hl 0x1800]
-  [:call vdp/set-write-addr]
-  [:ld :b 3]
-  [:xor :a]
-  (label :loop
-         [:out [0x98] :a]
-         [:inc :a]
-         [:jp :nz :loop]
-         [:djnz :loop])
-  [:ret])
-
 (defasmproc load-patterns {:page :code}
   ;; HL=patterns
   [:push :hl]
@@ -34,7 +22,6 @@
   [:pop :hl]
   [:jp uncompress-lz77-to-vram])
 
-
 (defasmproc load-title {:page :code}
   ;; in a=page-pattern b=colors-pattern hl=patterns de=color
   [:push :de]
@@ -45,12 +32,14 @@
   [:call bios/DISSCR]
   [:di]
 
+  ;; load patterns
   [:pop :af]
   (set-konami5-page 3 :a)
-  [:call clear-name]
+  [:call vdp/clear-name-table]
   [:pop :hl]
   [:call load-patterns]
 
+  ;; load colors
   [:pop :af]
   (set-konami5-page 3 :a)
   [:pop :hl]
