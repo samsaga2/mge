@@ -17,7 +17,7 @@
 
 ;; args
 
-(defn- get-localvar-index
+(defn- get-byte-localvar-index
   [id]
   (case id
     "type"    spr/+spr-type+
@@ -25,6 +25,11 @@
     "y"       spr/+spr-y+
     "width"   spr/+spr-w+
     "height"  spr/+spr-h+
+    nil))
+
+(defn- get-word-localvar-index
+  [id]
+  (case id
     "local0"  spr/+spr-local0+
     "local1"  (+ spr/+spr-local0+ 1)
     "local2"  (+ spr/+spr-local0+ 2)
@@ -50,46 +55,55 @@
     [id]
     (get vars id)))
 
-(defn- var-source
-  [id]
-  (cond (string? id) (if-let [i (get-localvar-index id)]
-                       [:ix i]
-                       (if-let [addr (get-globalvar-addr id)]
-                         [addr]
-                         (throw (Exception. "Uknown variable " id))))
-        (number? id) id))
-
-(defn- arg-source
-  [arg]
-  (let [v (second arg)]
-    (case (first arg)
-      :num (var-source (Integer. v))
-      :id  (var-source v))))
-
 (defn- load-arg
-  [arg & [reg]]
-  (if (and (= (first arg) :id)
-           (= (str/lower-case (second arg)) "rnd"))
-    [[:call u/random-word]
-     [:ld (or reg :a) :l]]
-    [[:ld (or reg :a) (arg-source arg)]]))
+  [arg]
+  (let [type (first arg)
+        v    (second arg)]
+    (case type
+      :id  (if (= (str/lower-case (second arg)) "rnd")
+             [[:call u/random-word]]
+             (if-let [i (get-byte-localvar-index v)]
+               [[:ld :l [:ix i]]
+                [:ld :h 0]]
+               (if-let [i (get-word-localvar-index v)]
+                 [[:ld :l [:ix i]]
+                  [:ld :h [:ix (inc i)]]]
+                 (if-let [addr (get-globalvar-addr v)]
+                   [[:ld :hl [addr]]]
+                   (throw (Exception. "Uknown variable " v))))))
+      :num [[:ld :hl (Integer. v)]])))
 
 (defn- store-arg
-  [arg & [reg]]
-  [[:ld (arg-source arg) (or reg :a)]])
+  [arg]
+  (let [type (first arg)
+        v    (second arg)]
+    (case type
+      :id  (if-let [i (get-byte-localvar-index v)]
+             [[:ld [:ix i] :l]]
+             (if-let [i (get-word-localvar-index v)]
+               [[:ld [:ix i] :l]
+                [:ld [:ix (inc i)] :h]]
+               (if-let [addr (get-globalvar-addr v)]
+                 [[:ld [addr] :hl]]
+                 (throw (Exception. "Uknown variable " v))))))))
 
 
 ;; util
 
 (defn- compare-code
   [i j cmp skip-label]
-  (concat (case cmp
-            "<=" [(load-arg j)
-                  (load-arg i :b)
-                  [:cp :b]]
+  (concat (if (= cmp "<=")
+            [(load-arg j)
+             [:push :hl]
+             (load-arg i)
+             [:ex :de :hl]
+             [:pop :hl]]
             [(load-arg i)
-             (load-arg j :b)
-             [:cp :b]])
+             [:push :hl]
+             (load-arg j)
+             [:ex :de :hl]
+             [:pop :hl]])
+          [[:call bios/DCOMPR]]
           (case cmp
             "="  [[:jp :nz skip-label]]
             "<>" [[:jp :z skip-label]]
@@ -122,19 +136,18 @@
   (when (> (count args) (count s/args))
     (throw (Exception. "Too many args for new sprite")))
   (mapcat (fn [argvar arg]
-            [[:ld :hl argvar]
-             [:ld :a [:hl]]
-             [:push :af]
+            [[:ld :hl [argvar]]
+             [:push :hl]
              (load-arg arg)
-             [:ld [:hl] :a]])
+             [:ld [argvar] :hl]])
           s/args
           args))
 
 (defn- pop-args
   [args]
   (mapcat (fn [argvar _]
-            [[:pop :af]
-             [:ld [argvar] :a]])
+            [[:pop :hl]
+             [:ld [argvar] :hl]])
           s/args
           args))
 
@@ -173,41 +186,41 @@
    [:ld [:ix spr/+spr-anim+] :l]
    [:ld [:ix (inc spr/+spr-anim+)] :h]
    [:ld :a (fn [] (:page (get-label res-id)))]
-   [:ld [:ix (inc spr/+spr-anim-page+)] :h]])
+   [:ld [:ix (inc spr/+spr-anim-page+)] :a]])
 
 (defn sprite-pos
   [x y]
   [(load-arg x)
-   [:ld [:ix spr/+spr-x+] :a]
+   [:ld [:ix spr/+spr-x+] :l]
    (load-arg y)
-   [:ld [:ix spr/+spr-y+] :a]])
+   [:ld [:ix spr/+spr-y+] :l]])
 
 (defn sprite-move
   [x y]
   [[:ld :a [:ix spr/+spr-x+]]
-   (load-arg x :b)
-   [:add :b]
+   (load-arg x)
+   [:add :l]
    [:ld [:ix spr/+spr-x+] :a]
 
    [:ld :a [:ix spr/+spr-y+]]
-   (load-arg y :b)
-   [:add :b]
+   (load-arg y)
+   [:add :l]
    [:ld [:ix spr/+spr-y+] :a]])
 
 (defn sprite-type
   [n]
   [(load-arg n)
-   [:ld [:ix spr/+spr-type+] :a]])
+   [:ld [:ix spr/+spr-type+] :l]])
 
 (defn sprite-width
   [n]
   [(load-arg n)
-   [:ld [:ix spr/+spr-w+] :a]])
+   [:ld [:ix spr/+spr-w+] :l]])
 
 (defn sprite-height
   [n]
   [(load-arg n)
-   [:ld [:ix spr/+spr-h+] :a]])
+   [:ld [:ix spr/+spr-h+] :l]])
 
 (defn if-keydown
   ([keyname then]
@@ -246,6 +259,7 @@
   ([type then else]
    (gen-if (fn [l]
              [(load-arg type)
+              [:ld :a :l]
               [:call spr/collide]
               [:jp :z l]])
            then else)))
@@ -255,13 +269,18 @@
    (if-tile offset-x offset-y type then nil))
   ([offset-x offset-y type then else]
    (gen-if (fn [l]
-             [(load-arg offset-x :b)
-              (load-arg offset-y :c)
-
+             [(load-arg offset-x)
+              [:ld :a :l]
+              [:ld :b :a]
+              (load-arg offset-y)
+              [:ld :a :l]
+              [:ld :c :a]
               [:call spr/get-tile]
               [:ld :b :a]
 
               (load-arg type)
+              [:ld :a :l]
+
               [:cp :b]
               [:jp :nz l]])
            then else)))
@@ -286,18 +305,19 @@
 (defn assign-add
   [id arg1 arg2]
   [(load-arg arg2)
-   [:ld :b :a]
+   [:ex :de :hl]
    (load-arg arg1)
-   [:add :b]
+   [:add :hl :de]
    (store-arg id)])
 
 (defn assign-sub
   [id arg1 arg2]
   [(load-arg arg2)
-   [:ld :b :a]
+   [:ex :de :hl]
    (load-arg arg1)
-   [:sub :b]
-   [:ld (arg-source id) :a]])
+   [:or :a]
+   [:sbc :hl :de]
+   (store-arg id)])
 
 (defn call
   [func args]
@@ -343,6 +363,7 @@
 (defn sfx-play
   [n]
   [(load-arg n)
+   [:ld :a :l]
    [:ld :c 0]
    [:call music/play-sfx]])
 
@@ -388,18 +409,26 @@
 
 (defn set-tile
   [x y n]
-  [(load-arg n :c)
-   (load-arg y :b)
-   (load-arg x :a)
+  [(load-arg n)
+   [:ld :a :l]
+   [:ld :c :a]
+   (load-arg y)
+   [:ld :a :l]
+   [:ld :b :a]
+   (load-arg x)
+   [:ld :a :l]
    [:call off/set-tile]])
 
-(defn print-str
+(defn write-str
   [x y str]
   (let [str-label  (keyword (gensym))
         next-label (keyword (gensym))]
     [[:ld :de str-label]
-     (load-arg y :b)
-     (load-arg x :a)
+     (load-arg y)
+     [:ld :a :l]
+     [:ld :b :a]
+     (load-arg x)
+     [:ld :a :l]
      [:call off/write-print]
      [:jr next-label]
      (label str-label (db str) (db 0))
