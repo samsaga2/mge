@@ -5,12 +5,12 @@ sub init
     width 2
     height 2
     pos arg0, arg1
-    move 6, 0
+    move 48, 0
     sfx play 0
 endsub
 
 sub update
-    if x >= 252 then
+    if x >= 2016 then
         call kill_bullet
         return
     endif
@@ -25,7 +25,7 @@ sub update
         return
     endif
 
-    move 4, 0
+    move 32, 0
 endsub
 
 sub kill_bullet

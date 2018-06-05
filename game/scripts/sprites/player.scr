@@ -3,7 +3,7 @@ sub init
     type 1
     width 6
     height 7
-    pos 100, 100
+    pos 800, 800
 
     local0 = 0 ' current state (0-idle, 1-walking)
     ' local1 next player state
@@ -21,25 +21,25 @@ sub update
     ' move player
     if keydown "left" then
         if x > 0 then
-            move -1, 0
+            move -8, 0
             local1 = 1
         endif
     endif
     if keydown "right" then
-        if x < 239 then
-            move 1, 0
+        if x < 1912 then
+            move 8, 0
             local1 = 1
         endif
     endif
     if keydown "up" then
         if y > 0 then
-            move 0, -1
+            move 0, -8
             local1 = 1
         endif
     endif
     if keydown "down" then
-        if y < 175 then
-            move 0, 1
+        if y < 1400 then
+            move 0, 8
             local1 = 1
         endif
     endif

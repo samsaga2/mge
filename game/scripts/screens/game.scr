@@ -1,11 +1,11 @@
 sub init
     load tilemap, "level1.tmx"
     new sprite, "player.scr"
-    new sprite, "missile.scr", 239
-    new sprite, "missile.scr", 223
-    new sprite, "missile.scr", 207
-    new sprite, "missile.scr", 191
-    new sprite, "missile.scr", 175
+    new sprite, "missile.scr", 1912 ' 239*8
+    new sprite, "missile.scr", 1784 ' 223*8
+    new sprite, "missile.scr", 1656 ' 207*8
+    new sprite, "missile.scr", 1528 ' 191*8
+    new sprite, "missile.scr", 1400 ' 175*8
     load music, "oldskool.pt3"
     load sfx, "effects.afb"
     global0 = 0 ' num of player bullets

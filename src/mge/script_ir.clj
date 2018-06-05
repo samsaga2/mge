@@ -9,6 +9,7 @@
             [mge.title :as title]
             [mge.script :as s]
             [mge.util :as u]
+            [mge.math :as m]
             [mge.music :as music]
             [mge.tilemap :as tilemap]
             [mge.screens :as scr]
@@ -17,7 +18,7 @@
 
 ;; args
 
-(defn- get-byte-localvar-index
+(defn- get-localvar-index
   [id]
   (case id
     "type"    spr/+spr-type+
@@ -25,11 +26,6 @@
     "y"       spr/+spr-y+
     "width"   spr/+spr-w+
     "height"  spr/+spr-h+
-    nil))
-
-(defn- get-word-localvar-index
-  [id]
-  (case id
     "local0"  spr/+spr-local0+
     "local1"  (+ spr/+spr-local0+ 1)
     "local2"  (+ spr/+spr-local0+ 2)
@@ -62,15 +58,12 @@
     (case type
       :id  (if (= (str/lower-case (second arg)) "rnd")
              [[:call u/random-word]]
-             (if-let [i (get-byte-localvar-index v)]
+             (if-let [i (get-localvar-index v)]
                [[:ld :l [:ix i]]
-                [:ld :h 0]]
-               (if-let [i (get-word-localvar-index v)]
-                 [[:ld :l [:ix i]]
-                  [:ld :h [:ix (inc i)]]]
-                 (if-let [addr (get-globalvar-addr v)]
-                   [[:ld :hl [addr]]]
-                   (throw (Exception. "Uknown variable " v))))))
+                [:ld :h [:ix (inc i)]]]
+               (if-let [addr (get-globalvar-addr v)]
+                 [[:ld :hl [addr]]]
+                 (throw (Exception. "Uknown variable " v)))))
       :num [[:ld :hl (Integer. v)]])))
 
 (defn- store-arg
@@ -78,14 +71,12 @@
   (let [type (first arg)
         v    (second arg)]
     (case type
-      :id  (if-let [i (get-byte-localvar-index v)]
-             [[:ld [:ix i] :l]]
-             (if-let [i (get-word-localvar-index v)]
-               [[:ld [:ix i] :l]
-                [:ld [:ix (inc i)] :h]]
-               (if-let [addr (get-globalvar-addr v)]
-                 [[:ld [addr] :hl]]
-                 (throw (Exception. "Uknown variable " v))))))))
+      :id  (if-let [i (get-localvar-index v)]
+             [[:ld [:ix i] :l]
+              [:ld [:ix (inc i)] :h]]
+             (if-let [addr (get-globalvar-addr v)]
+               [[:ld [addr] :hl]]
+               (throw (Exception. "Uknown variable " v)))))))
 
 
 ;; util
@@ -192,20 +183,26 @@
   [x y]
   [(load-arg x)
    [:ld [:ix spr/+spr-x+] :l]
+   [:ld [:ix (inc spr/+spr-x+)] :h]
    (load-arg y)
-   [:ld [:ix spr/+spr-y+] :l]])
+   [:ld [:ix spr/+spr-y+] :l]
+   [:ld [:ix (inc spr/+spr-y+)] :h]])
 
 (defn sprite-move
   [x y]
-  [[:ld :a [:ix spr/+spr-x+]]
+  [[:ld :e [:ix spr/+spr-x+]]
+   [:ld :d [:ix (inc spr/+spr-x+)]]
    (load-arg x)
-   [:add :l]
-   [:ld [:ix spr/+spr-x+] :a]
+   [:add :hl :de]
+   [:ld [:ix spr/+spr-x+] :l]
+   [:ld [:ix (inc spr/+spr-x+)] :h]
 
-   [:ld :a [:ix spr/+spr-y+]]
+   [:ld :e [:ix spr/+spr-y+]]
+   [:ld :d [:ix (inc spr/+spr-y+)]]
    (load-arg y)
-   [:add :l]
-   [:ld [:ix spr/+spr-y+] :a]])
+   [:add :hl :de]
+   [:ld [:ix spr/+spr-y+] :l]
+   [:ld [:ix (inc spr/+spr-y+)] :h]])
 
 (defn sprite-type
   [n]

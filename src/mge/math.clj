@@ -17,3 +17,11 @@
     (apply concat
            (repeat n [[:sra :h]
                       [:rr :l]]))))
+
+(defn div-de-by-pow2
+  [n]
+  (let [n (log2 n)]
+    (assert (= (Math/floor n) n))
+    (apply concat
+           (repeat n [[:sra :d]
+                      [:rr :e]]))))

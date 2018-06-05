@@ -12,21 +12,21 @@
 
 ;; sprite struct
 (def +spr-type+ 0)
-(def +spr-flags+ 1)
-(def +spr-x+ 2)
-(def +spr-y+ 3)
-(def +spr-color1+ 4)
-(def +spr-color2+ 5)
-(def +spr-w+ 6)
-(def +spr-h+ 7)
-(def +spr-anim+ 8)                       ; 2 bytes
-(def +spr-anim-page+ 10)
-(def +spr-local0+ 16)
+(def +spr-flags+ 2)
+(def +spr-x+ 4)
+(def +spr-y+ 6)
+(def +spr-color1+ 8)
+(def +spr-color2+ 10)
+(def +spr-w+ 12)
+(def +spr-h+ 14)
+(def +spr-anim+ 16)
+(def +spr-anim-page+ 18)
+(def +spr-local0+ 20)
 
 ;; sprites consts
 (def +flag-deleted+ 1)
 (def +sprites-count+ 16)
-(def +varsprites-count+ 32)
+(def +varsprites-count+ 64)
 
 
 ;; variables
@@ -52,9 +52,10 @@
   [:ld :ix data]
   [:ld :de +varsprites-count+]
   [:ld :b +sprites-count+]
+  [:ld :hl (* 192 8)]
   (label :loop
-         [:ld [:ix +spr-y+] 192]
-         [:ld [:ix +spr-color1+] 0]
+         [:ld [:ix +spr-y+] :l]
+         [:ld [:ix (inc +spr-y+)] :h]
          [:add :ix :de]
          [:djnz :loop])
   [:ret])
@@ -76,13 +77,17 @@
          [:jp :z :hide-sprite1]
          [:ld [:iy spr/+attribute-color+] :a]
 
-         [:ld :a [:ix +spr-y+]]
-         [:ld [:iy spr/+attribute-y+] :a]
-         [:ld [:iy (+ spr/+attribute-y+ 4)] :a]
+         [:ld :l [:ix +spr-y+]]
+         [:ld :h [:ix (inc +spr-y+)]]
+         (m/div-hl-by-pow2 8)
+         [:ld [:iy spr/+attribute-y+] :l]
+         [:ld [:iy (+ spr/+attribute-y+ 4)] :l]
 
-         [:ld :a [:ix +spr-x+]]
-         [:ld [:iy spr/+attribute-x+] :a]
-         [:ld [:iy (+ spr/+attribute-x+ 4)] :a]
+         [:ld :l [:ix +spr-x+]]
+         [:ld :h [:ix (inc +spr-x+)]]
+         (m/div-hl-by-pow2 8)
+         [:ld [:iy spr/+attribute-x+] :l]
+         [:ld [:iy (+ spr/+attribute-x+ 4)] :l]
 
          [:ld :a :c]
          [:ld [:iy spr/+attribute-pattern+] :a]
@@ -121,13 +126,23 @@
   [:ld :c 0]
   (label :loop
          ;; sprite 1
-         [:ld :a [:ix +spr-y+]]
-         [:ld [:iy spr/+attribute-y+] :a]
-         [:ld [:iy (+ spr/+attribute-y+ 4)] :a]
+         [:ld :a [:ix +spr-color1+]]
+         [:or :a]
+         [:jp :z :hide-sprite1]
+         [:ld [:iy spr/+attribute-color+] :a]
 
-         [:ld :a [:ix +spr-x+]]
-         [:ld [:iy spr/+attribute-x+] :a]
-         [:ld [:iy (+ spr/+attribute-x+ 4)] :a]
+
+         [:ld :l [:ix +spr-y+]]
+         [:ld :h [:ix (inc +spr-y+)]]
+         (m/div-hl-by-pow2 8)
+         [:ld [:iy spr/+attribute-y+] :l]
+         [:ld [:iy (+ spr/+attribute-y+ 4)] :l]
+
+         [:ld :l [:ix +spr-x+]]
+         [:ld :h [:ix (inc +spr-x+)]]
+         (m/div-hl-by-pow2 8)
+         [:ld [:iy spr/+attribute-x+] :l]
+         [:ld [:iy (+ spr/+attribute-x+ 4)] :l]
 
          [:ld :a :c]
          [:ld [:iy spr/+attribute-pattern+] :a]
@@ -136,18 +151,17 @@
          [:add 4]
          [:ld :c :a]
 
-         [:ld :a [:ix +spr-color1+]]
-         [:ld [:iy spr/+attribute-color+] :a]
-
          ;; sprite 2
          [:ld :a [:ix +spr-color2+]]
          [:or :a]
-         [:jp :z :hide]
+         [:jp :z :hide-sprite2]
 
-         (label :show
+         (label :show-sprite
                 [:ld [:iy (+ spr/+attribute-color+ 4)] :a]
                 [:jp :next])
-         (label :hide
+         (label :hide-sprite1
+                [:ld [:iy spr/+attribute-y+] 192])
+         (label :hide-sprite2
                 [:ld [:iy (+ spr/+attribute-y+ 4)] 192])
          (label :next
                 [:ld :de +varsprites-count+]
@@ -210,9 +224,13 @@
          [:ld [:hl] :e]
          [:pop :hl]                     ; call init
          [:ld [:ix +spr-type+] 0]
+         [:ld [:ix (inc +spr-type+)] 0]
          [:ld [:ix +spr-flags+] 0]
+         [:ld [:ix (inc +spr-flags+)] 0]
          [:ld [:ix +spr-w+] 8]
+         [:ld [:ix (inc +spr-w+)] 0]
          [:ld [:ix +spr-h+] 8]
+         [:ld [:ix (inc +spr-h+)] 0]
          [:call u/call-hl]
          [:pop :ix]                     ; restore things
          [:pop :af]
@@ -263,8 +281,10 @@
          [:jp :z :next]
 
          ;; real delete
-         [:ld [:ix +spr-y+] 192]
-         [:ld [:ix (+ +spr-y+ 4)] 192]
+         [:ld [:ix +spr-y+] (bit-and (* 192 8) 255)]
+         [:ld [:ix (inc +spr-y+)] (bit-shift-right (* 192 8) 8)]
+         [:ld [:ix (+ +spr-y+ 4)] (bit-and (* 192 8) 255)]
+         [:ld [:ix (inc (+ +spr-y+ 4))] (bit-shift-right (* 192 8) 8)]
          [:ld [:ix +spr-anim+] 0]
          [:ld [:ix (inc +spr-anim+)] 0]
          [:dec :hl]
@@ -328,29 +348,46 @@
   ;; w
   [:ld :a [:ix +spr-w+]]
   [:add [:iy +spr-w+]]
-  [:ld :d :a]
+  [:ld :c :a]
 
   ;; x
-  [:ld :a [:ix +spr-x+]]
-  [:sub [:iy +spr-x+]]
+  [:ld :l [:ix +spr-x+]]
+  [:ld :h [:ix (inc +spr-x+)]]
+  (m/div-hl-by-pow2 8)
+  [:ld :a :l]
+
+
+  [:ld :e [:iy +spr-x+]]
+  [:ld :d [:iy (inc +spr-x+)]]
+  (m/div-de-by-pow2 8)
+  [:sub :e]
+
   [:jp :nc :no-swap-x]
   [:neg]
   (label :no-swap-x)
-  [:cp :d]
+  [:cp :c]
   [:jp :nc :no-collision]
 
   ;; h
   [:ld :a [:ix +spr-h+]]
   [:add [:iy +spr-h+]]
-  [:ld :d :a]
+  [:ld :c :a]
 
   ;; y
-  [:ld :a [:ix +spr-y+]]
-  [:sub [:iy +spr-y+]]
+  [:ld :l [:ix +spr-y+]]
+  [:ld :h [:ix (inc +spr-y+)]]
+  (m/div-hl-by-pow2 8)
+  [:ld :a :l]
+
+  [:ld :e [:iy +spr-y+]]
+  [:ld :d [:iy (inc +spr-y+)]]
+  (m/div-de-by-pow2 8)
+  [:sub :e]
+
   [:jp :nc :no-swap-y]
   [:neg]
   (label :no-swap-y)
-  [:cp :d]
+  [:cp :c]
   [:jp :nc :no-collision]
 
   (label :collision
@@ -386,7 +423,11 @@
          [:jp :nz :next]
 
          ;; check collision
+         [:push :hl]
+         [:push :bc]
          [:call box-collision]
+         [:pop :bc]
+         [:pop :hl]
          [:ret :nz]
 
          (label :next
@@ -475,11 +516,17 @@
 
 (defasmproc get-tile {:page :code}
   ;; in b=offset-x c=offset-y out type=a
-  [:ld :a [:ix +spr-x+]]
+  [:ld :l [:ix +spr-x+]]
+  [:ld :h [:ix (inc +spr-x+)]]
+  (m/div-hl-by-pow2 8)
+  [:ld :a :l]
   [:add :b]
   [:ld :b :a]
 
-  [:ld :a [:ix +spr-y+]]
+  [:ld :l [:ix +spr-y+]]
+  [:ld :h [:ix (inc +spr-y+)]]
+  (m/div-hl-by-pow2 8)
+  [:ld :a :l]
   [:add :c]
   [:ld :c :a]
 
