@@ -1,3 +1,6 @@
+global nbullets
+global scroll
+
 sub init
     load tilemap, "level1.tmx"
     new sprite, "player.scr"
@@ -8,16 +11,16 @@ sub init
     new sprite, "missile.scr", 1400 ' 175*8
     load music, "oldskool.pt3"
     load sfx, "effects.afb"
-    global0 = 0 ' num of player bullets
-    global1 = 0 ' scroll
+    nbullets = 0
+    scroll = 0
     print 1, 23, "SCORE 000000"
     print 25, 23, "LIVE 3"
 endsub
 
 sub update
-    global1 = global1 + 1
-    if global1 = 24 then
-       global1 = 0
+    scroll = scroll + 1
+    if scroll = 24 then
+       scroll = 0
        scroll right
     endif
 endsub

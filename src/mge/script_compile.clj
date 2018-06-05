@@ -4,6 +4,7 @@
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
             [mge.script-ir :as ir]
+            [mge.script :as s]
             [clojure.string :as str]
             [mge.sprites :as spr]))
 
@@ -160,33 +161,62 @@
   (doall (mapcat (partial compile-op env) ops)))
 
 (defn- compile-sub
+  [env id ops]
+  [(keyword id)
+   (doall
+    (concat (compile-ops (:env @env) ops)
+            (ir/end env)))])
+
+(defn- compile-property
+  [env id]
+  (let [local-index (inc (:local-index @env))]
+    (when (== local-index 16)
+      (throw (Exception. "Too many properties")))
+    (swap! env assoc
+           :local-index local-index
+           :env (assoc (:env @env)
+                       id {:type :local
+                           :addr (+ spr/+spr-local0+
+                                    (* (dec local-index) 2))}))
+    nil))
+
+(defn- compile-global
+  [env id]
+  (let [globals (:globals @env)]
+    (when-not (get @globals id)
+      (let [free-globals (:free-globals @env)
+            global       {:type :global
+                          :addr (first @free-globals)}]
+        (when (empty? @free-globals)
+          (throw (Exception. "Too many globals")))
+        (reset! free-globals (rest @free-globals))
+        (swap! globals assoc id global)
+        (swap! env assoc :env (assoc (:env @env) id global)))
+      nil)))
+
+(defn- compile-root
   [env sub]
   (match sub
          [:sub [:id id] & ops]
-         [(keyword id)
-          (doall
-           (concat (compile-ops (:env @env) ops)
-                   (ir/end env)))]
+         (compile-sub env id ops)
 
          [:property [:id id]]
-         (let [local-index (inc (:local-index @env))]
-           (when (== local-index 16)
-             (throw (Exception. "Too many properties")))
-           (swap! env assoc
-                  :local-index local-index
-                  :env (assoc (:env @env)
-                              id {:type :local
-                                  :addr (+ spr/+spr-local0+
-                                           (* (dec local-index) 2))}))
-           nil)))
+         (compile-property env id)
 
-(defn- compile-script-prog
-  [prog]
-  (let [env (atom {:env         (ir/default-env)
-                   :local-index 0})]
-    (match prog
-           [:prog & subs]
-           (doall (into {} (map (partial compile-sub env) subs))))))
+         [:global [:id id]]
+         (compile-global env id)))
+
+(let [globals      (atom {})
+      free-globals (atom s/globals)]
+  (defn- compile-script-prog
+    [prog]
+    (let [env (atom {:env          (merge (ir/default-env) @globals)
+                     :free-globals free-globals
+                     :globals      globals
+                     :local-index  0})]
+      (match prog
+             [:prog & subs]
+             (doall (into {} (map (partial compile-root env) subs)))))))
 
 
 ;; animation prog

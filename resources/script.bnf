@@ -1,4 +1,4 @@
-prog = (<nl-comment>|<ws>)? (property|sub) (<nl-comment> (property|sub))* (<nl-comment>|<ws>)?
+prog = (<nl-comment>|<ws>)? (global|property|sub) (<nl-comment> (global|property|sub))* (<nl-comment>|<ws>)?
 
 nl = #'[\s\n\r]+'
 comment = #'\s*\'[^\n\r]*[\n\r]+'
@@ -10,6 +10,7 @@ str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
 property = <'property'> <ws> id
+global = <'global'> <ws> id
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
 <op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str) <nl-comment>+

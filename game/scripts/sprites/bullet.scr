@@ -1,5 +1,7 @@
+global nbullets
+
 sub init
-    global0 = global0 + 1
+    nbullets = nbullets + 1
     load image, "bullet.png"
     type 3
     width 2
@@ -29,6 +31,6 @@ sub update
 endsub
 
 sub kill_bullet
-    global0 = global0 - 1
+    nbullets = nbullets - 1
     delete
 endsub

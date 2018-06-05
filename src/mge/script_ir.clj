@@ -20,7 +20,7 @@
 
 (defn default-env
   []
-  (let [global-vars (->> (concat s/args s/globals)
+  (let [global-vars (->> s/args
                          (map (fn [g] [(second (str/split (name g) #"---"))
                                        {:addr g
                                         :type :global}]))
@@ -38,7 +38,8 @@
 
 (defn- get-env-var
   [env id]
-  (get env id))
+  (or (get env id)
+      (throw (Exception. (str "Variable " id " not found")))))
 
 
 ;; args
@@ -62,7 +63,7 @@
 (defn- store-arg
   [env arg]
   (let [type (first arg)
-        id    (second arg)]
+        id   (second arg)]
     (case type
       :id (if-let [v (get-env-var env id)]
             (let [i (:addr v)]

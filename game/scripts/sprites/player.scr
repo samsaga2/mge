@@ -1,3 +1,5 @@
+global nbullets
+
 property state ' current state (0-idle, 1-walking)
 property next_state
 property is_dead
@@ -61,7 +63,7 @@ sub update
 
     ' fire bullet
     if keypressed "space" then
-        if global0 < 2 then
+        if nbullets < 2 then
             new sprite, "bullet.scr", x, y
         endif
     endif
