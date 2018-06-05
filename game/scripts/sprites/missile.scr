@@ -12,7 +12,6 @@ endsub
 
 sub update
     if local0 = 1 then
-       move -2, 0
        return
     endif
 
@@ -23,7 +22,7 @@ sub update
     endif
 
     move -8, 0
-    if x = 0 then
+    if x <= 0 then
        call random_y
     endif
 endsub
