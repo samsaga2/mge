@@ -107,7 +107,7 @@
          [(ir/set-tile x y n)]
 
          [:print-str x y [:str str]]
-         [(ir/print-str x y str)]
+         [(ir/write-str x y str)]
 
          :else nil))
 
