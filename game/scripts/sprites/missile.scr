@@ -1,22 +1,20 @@
+property state ' 0-normal 1-explosion
+
 sub init
     load image, "missile.png"
     type 2
     call random_y
     pos arg0, y
-
-    ' current state
-    ' 0 - normal
-    ' 1 - explosion
-    local0 = 0
+    state = 0
 endsub
 
 sub update
-    if local0 = 1 then
+    if state = 1 then
        return
     endif
 
     if collide 3 then
-       local0 = 1
+       state = 1
        load animation, "missile_explosion.scr"
        return
     endif

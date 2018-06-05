@@ -4,7 +4,8 @@
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
             [mge.script-ir :as ir]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [mge.sprites :as spr]))
 
 
 ;; script prog
@@ -14,170 +15,191 @@
 (declare compile-ops)
 
 (defn- compile-sprite-ops
-  [op]
+  [env op]
   (match op
          [:new-sprite [:str s] & args]
-         [(ir/new-sprite (make-sprite-script-id s :init)
+         [(ir/new-sprite env
+                         (make-sprite-script-id s :init)
                          (make-sprite-script-id s :update)
                          args)]
 
          [:sprite-pos x y]
-         [(ir/sprite-pos x y)]
+         [(ir/sprite-pos env x y)]
 
          [:sprite-move x y]
-         [(ir/sprite-move x y)]
+         [(ir/sprite-move env x y)]
 
          [:sprite-type n]
-         [(ir/sprite-type n)]
+         [(ir/sprite-type env n)]
 
          [:sprite-width n]
-         [(ir/sprite-width n)]
+         [(ir/sprite-width env n)]
 
          [:sprite-height n]
-         [(ir/sprite-height n)]
+         [(ir/sprite-height env n)]
 
          [:sprite-delete]
-         [(ir/sprite-delete)]
+         [(ir/sprite-delete env)]
 
          :else nil))
 
 (defn- compile-load-ops
-  [op]
+  [env op]
   (match op
          [:load type [:str s]]
          (case type
-           "image"     [(ir/sprite-image (make-sprite-id s)
+           "image"     [(ir/sprite-image env
+                                         (make-sprite-id s)
                                          (make-sprite-color1-id s)
                                          (make-sprite-color2-id s))]
-           "title"     [(ir/load-title (make-title-pattern-id s)
+           "title"     [(ir/load-title env
+                                       (make-title-pattern-id s)
                                        (make-title-color-id s))]
-           "animation" [(ir/sprite-animation (make-animation-script-id s :update))]
-           "music"     [(ir/music-load (make-music-id s))]
-           "sfx"       [(ir/sfx-load (make-sfx-id s))]
-           "tilemap"   [(ir/tilemap-load (make-tilemap-id s :pattern)
+           "animation" [(ir/sprite-animation env (make-animation-script-id s :update))]
+           "music"     [(ir/music-load env (make-music-id s))]
+           "sfx"       [(ir/sfx-load env (make-sfx-id s))]
+           "tilemap"   [(ir/tilemap-load env
+                                         (make-tilemap-id s :pattern)
                                          (make-tilemap-id s :colors)
                                          (make-tilemap-id s :attr)
                                          (make-tilemap-id s :lines)
                                          (make-tilemap-id s :map)
                                          (make-tilemap-id s :types))]
-           "screen" [(ir/screen-load (make-screen-script-id s :init)
+           "screen" [(ir/screen-load env
+                                     (make-screen-script-id s :init)
                                      (make-screen-script-id s :update))])
 
          [:anim-load "animation" [:str s]]
-         [(ir/animation-load (make-animation-script-id s :update))]
+         [(ir/animation-load env (make-animation-script-id s :update))]
 
          :else nil))
 
 (defn- compile-misc-ops
-  [op]
+  [env op]
   (match op
          [:return]
-         [(ir/return)]
+         [(ir/return env)]
 
          [:assign-val id arg]
-         [(ir/assign-val id arg)]
+         [(ir/assign-val env id arg)]
 
          [:assign-add id arg1 arg2]
-         [(ir/assign-add id arg1 arg2)]
+         [(ir/assign-add env id arg1 arg2)]
 
          [:assign-sub id arg1 arg2]
-         [(ir/assign-sub id arg1 arg2)]
+         [(ir/assign-sub env id arg1 arg2)]
 
          [:call [:id s] & args]
-         [(ir/call (make-sprite-script-id (.getName *script-file*)
+         [(ir/call env
+                   (make-sprite-script-id (.getName *script-file*)
                                           (keyword s))
                    args)]
 
          [:next-frame]
-         [(ir/animation-next-frame)]
+         [(ir/animation-next-frame env)]
 
          [:music-stop]
-         [(ir/music-stop)]
+         [(ir/music-stop env)]
 
          [:sfx-play arg]
-         [(ir/sfx-play arg)]
+         [(ir/sfx-play env arg)]
 
          [:scroll-left]
-         [(ir/scroll-left)]
+         [(ir/scroll-left env)]
 
          [:scroll-right]
-         [(ir/scroll-right)]
+         [(ir/scroll-right env)]
 
          [:set-tile x y n]
-         [(ir/set-tile x y n)]
+         [(ir/set-tile env x y n)]
 
          [:print-str x y [:str str]]
-         [(ir/write-str x y str)]
+         [(ir/write-str env x y str)]
 
          :else nil))
 
 (defn- compile-if-ops
-  [op]
-  (let [compile-if (fn [condfn then]
+  [env op]
+  (let [compile-if (fn [env condfn then]
                      (if (= (some-> then last first) :else)
                        (let [else (rest (last then))
                              then (drop-last then)]
                          [(condfn
-                           (compile-ops then)
-                           (compile-ops else))])
-                       [(condfn (compile-ops then))]))]
+                           (compile-ops env then)
+                           (compile-ops env else))])
+                       [(condfn (compile-ops env then))]))]
     (match op
            [:if-ops [:if-keydown [:str key]] [:then & then]]
-           (compile-if (partial ir/if-keydown key) then)
+           (compile-if env (partial ir/if-keydown env key) then)
 
            [:if-ops [:if-keypressed [:str key]] [:then & then]]
-           (compile-if (partial ir/if-keypressed key) then)
+           (compile-if env (partial ir/if-keypressed env key) then)
 
            [:if-ops [:if-cmp id cmp n] [:then & then]]
-           (compile-if (partial ir/if-cmp id cmp n) then)
+           (compile-if env (partial ir/if-cmp env id cmp n) then)
 
            [:if-ops [:if-collide n] [:then & then]]
-           (compile-if (partial ir/if-collide n) then)
+           (compile-if env (partial ir/if-collide env n) then)
 
            [:if-ops [:if-tile x y type] [:then & then]]
-           (compile-if (partial ir/if-tile x y type) then)
+           (compile-if env (partial ir/if-tile env x y type) then)
 
            :else nil)))
 
 (defn- compile-op
-  [op]
+  [env op]
   (doall
-   (apply concat (or (compile-sprite-ops op)
-                     (compile-load-ops op)
-                     (compile-misc-ops op)
-                     (compile-if-ops op)
+   (apply concat (or (compile-sprite-ops env op)
+                     (compile-load-ops env op)
+                     (compile-misc-ops env op)
+                     (compile-if-ops env op)
                      (throw (Exception. (str "Uknown func " op)))))))
 
 (defn- compile-ops
-  [ops]
-  (doall (mapcat compile-op ops)))
+  [env ops]
+  (doall (mapcat (partial compile-op env) ops)))
 
 (defn- compile-sub
-  [sub]
+  [env sub]
   (match sub
          [:sub [:id id] & ops]
          [(keyword id)
           (doall
-           (concat (compile-ops ops)
-                   (ir/end)))]))
+           (concat (compile-ops (:env @env) ops)
+                   (ir/end env)))]
+
+         [:property [:id id]]
+         (let [local-index (inc (:local-index @env))]
+           (when (== local-index 16)
+             (throw (Exception. "Too many properties")))
+           (swap! env assoc
+                  :local-index local-index
+                  :env (assoc (:env @env)
+                              id {:type :local
+                                  :addr (+ spr/+spr-local0+
+                                           (* (dec local-index) 2))}))
+           nil)))
 
 (defn- compile-script-prog
   [prog]
-  (match prog
-         [:prog & subs]
-         (doall (into {} (map compile-sub subs)))))
+  (let [env (atom {:env         (ir/default-env)
+                   :local-index 0})]
+    (match prog
+           [:prog & subs]
+           (doall (into {} (map (partial compile-sub env) subs))))))
 
 
 ;; animation prog
 
 (defn- compile-animation-prog
   [prog]
-  (match prog
-         [:prog & ops]
-         (->> (concat (compile-ops ops)
-                      (ir/animation-end))
-              vec
-              doall)))
+  (let [env (ir/default-env)]
+    (match prog
+           [:prog & ops]
+           (->> (concat (compile-ops env ops)
+                        (ir/animation-end env))
+                vec
+                doall))))
 
 
 ;; core

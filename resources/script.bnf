@@ -1,16 +1,18 @@
-prog = (<nl-comment>|<ws>)? sub (<nl-comment> sub)* (<nl-comment>|<ws>)?
+prog = (<nl-comment>|<ws>)? (property|sub) (<nl-comment> (property|sub))* (<nl-comment>|<ws>)?
 
 nl = #'[\n\r]+'
 comment = #'\s*\'[^\n\r]*[\n\r]+'
 nl-comment = (comment|nl)
 ws = #'\s+'
-id = #'[a-zA-Z_][a-zA-Z_0-9]*'
+id = #'[a-zA-Z_][a-zA-Z0-9_]*'
 num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
+property = <'property'> <ws> id
+
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str) <nl-comment>+
+<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str) <ws>* <nl-comment>+
 
 <arg> = (id|num)
 

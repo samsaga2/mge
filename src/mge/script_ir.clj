@@ -16,82 +16,76 @@
             [mge.offscreen :as off]))
 
 
+;; env
+
+(defn default-env
+  []
+  (let [global-vars (->> (concat s/args s/globals)
+                         (map (fn [g] [(second (str/split (name g) #"---"))
+                                       {:addr g
+                                        :type :global}]))
+                         (into {}))
+        local-vars  {"type"   spr/+spr-type+
+                     "x"      spr/+spr-x+
+                     "y"      spr/+spr-y+
+                     "width"  spr/+spr-w+
+                     "height" spr/+spr-h+}
+        local-vars  (->> local-vars
+                         (map (fn [[k v]] [k {:addr v
+                                              :type :local}]))
+                         (into {}))]
+    (merge global-vars local-vars)))
+
+(defn- get-env-var
+  [env id]
+  (get env id))
+
+
 ;; args
 
-(defn- get-localvar-index
-  [id]
-  (case id
-    "type"    spr/+spr-type+
-    "x"       spr/+spr-x+
-    "y"       spr/+spr-y+
-    "width"   spr/+spr-w+
-    "height"  spr/+spr-h+
-    "local0"  spr/+spr-local0+
-    "local1"  (+ spr/+spr-local0+ 1)
-    "local2"  (+ spr/+spr-local0+ 2)
-    "local3"  (+ spr/+spr-local0+ 3)
-    "local4"  (+ spr/+spr-local0+ 4)
-    "local5"  (+ spr/+spr-local0+ 5)
-    "local6"  (+ spr/+spr-local0+ 6)
-    "local7"  (+ spr/+spr-local0+ 7)
-    "local8"  (+ spr/+spr-local0+ 8)
-    "local9"  (+ spr/+spr-local0+ 9)
-    "local10" (+ spr/+spr-local0+ 10)
-    "local11" (+ spr/+spr-local0+ 11)
-    "local12" (+ spr/+spr-local0+ 12)
-    "local13" (+ spr/+spr-local0+ 13)
-    "local14" (+ spr/+spr-local0+ 14)
-    "local15" (+ spr/+spr-local0+ 15)
-    nil))
-
-(let [vars (->> (concat s/args s/globals)
-                   (map (fn [g] [(second (str/split (name g) #"---")) g]))
-                   (into {}))]
-  (defn- get-globalvar-addr
-    [id]
-    (get vars id)))
-
 (defn- load-arg
-  [arg]
+  [env arg]
   (let [type (first arg)
-        v    (second arg)]
+        id   (second arg)]
     (case type
-      :id  (if (= (str/lower-case (second arg)) "rnd")
+      :id  (if (= (str/lower-case id) "rnd")
              [[:call u/random-word]]
-             (if-let [i (get-localvar-index v)]
-               [[:ld :l [:ix i]]
-                [:ld :h [:ix (inc i)]]]
-               (if-let [addr (get-globalvar-addr v)]
-                 [[:ld :hl [addr]]]
-                 (throw (Exception. "Uknown variable " v)))))
-      :num [[:ld :hl (Integer. v)]])))
+             (if-let [v (get-env-var env id)]
+               (let [i (:addr v)]
+                 (case (:type v)
+                   :local [[:ld :l [:ix i]]
+                           [:ld :h [:ix (inc i)]]]
+                   :global [[:ld :hl [i]]]))
+               (throw (Exception. "Uknown variable " id))))
+      :num [[:ld :hl (Integer. id)]])))
 
 (defn- store-arg
-  [arg]
+  [env arg]
   (let [type (first arg)
-        v    (second arg)]
+        id    (second arg)]
     (case type
-      :id  (if-let [i (get-localvar-index v)]
-             [[:ld [:ix i] :l]
-              [:ld [:ix (inc i)] :h]]
-             (if-let [addr (get-globalvar-addr v)]
-               [[:ld [addr] :hl]]
-               (throw (Exception. "Uknown variable " v)))))))
+      :id (if-let [v (get-env-var env id)]
+            (let [i (:addr v)]
+              (case (:type v)
+                :local  [[:ld [:ix i] :l]
+                         [:ld [:ix (inc i)] :h]]
+                :global [[:ld [i] :hl]]))
+            (throw (Exception. "Uknown variable " id))))))
 
 
 ;; util
 
 (defn- compare-code
-  [i j cmp skip-label]
+  [env i j cmp skip-label]
   (concat (if (= cmp "<=")
-            [(load-arg j)
+            [(load-arg env j)
              [:push :hl]
-             (load-arg i)
+             (load-arg env i)
              [:ex :de :hl]
              [:pop :hl]]
-            [(load-arg i)
+            [(load-arg env i)
              [:push :hl]
-             (load-arg j)
+             (load-arg env j)
              [:ex :de :hl]
              [:pop :hl]])
           [[:call bios/DCOMPR]]
@@ -123,19 +117,19 @@
               (label lendif)))))
 
 (defn- push-args
-  [args]
+  [env args]
   (when (> (count args) (count s/args))
     (throw (Exception. "Too many args for new sprite")))
   (mapcat (fn [argvar arg]
             [[:ld :hl [argvar]]
              [:push :hl]
-             (load-arg arg)
+             (load-arg env arg)
              [:ld [argvar] :hl]])
           s/args
           args))
 
 (defn- pop-args
-  [args]
+  [env args]
   (mapcat (fn [argvar _]
             [[:pop :hl]
              [:ld [argvar] :hl]])
@@ -146,25 +140,25 @@
 ;; core
 
 (defn end
-  []
+  [env]
   [[:ret]])
 
 (defn new-sprite
-  [init-id update-id args]
+  [env init-id update-id args]
   (when (> (count args) (count s/args))
     (throw (Exception. "Too many args for new sprite")))
-  (concat (push-args args)
+  (concat (push-args env args)
           [[:ld :hl init-id]
            [:ld :de update-id]
            [:call spr/new-sprite]]
-          (pop-args args)))
+          (pop-args env args)))
 
 (defn sprite-delete
-  []
+  [env]
   [[:call spr/delete-sprite]])
 
 (defn sprite-image
-  [res-id color1-id color2-id]
+  [env res-id color1-id color2-id]
   [[:ld [:ix spr/+spr-color1+] color1-id]
    [:ld [:ix spr/+spr-color2+] color2-id]
    (set-konami5-page 3 (fn [] (:page (get-label res-id))))
@@ -172,7 +166,7 @@
    [:call spr/write-pattern]])
 
 (defn sprite-animation
-  [res-id]
+  [env res-id]
   [[:ld :hl res-id]
    [:ld [:ix spr/+spr-anim+] :l]
    [:ld [:ix (inc spr/+spr-anim+)] :h]
@@ -180,49 +174,49 @@
    [:ld [:ix (inc spr/+spr-anim-page+)] :a]])
 
 (defn sprite-pos
-  [x y]
-  [(load-arg x)
+  [env x y]
+  [(load-arg env x)
    [:ld [:ix spr/+spr-x+] :l]
    [:ld [:ix (inc spr/+spr-x+)] :h]
-   (load-arg y)
+   (load-arg env y)
    [:ld [:ix spr/+spr-y+] :l]
    [:ld [:ix (inc spr/+spr-y+)] :h]])
 
 (defn sprite-move
-  [x y]
+  [env x y]
   [[:ld :e [:ix spr/+spr-x+]]
    [:ld :d [:ix (inc spr/+spr-x+)]]
-   (load-arg x)
+   (load-arg env x)
    [:add :hl :de]
    [:ld [:ix spr/+spr-x+] :l]
    [:ld [:ix (inc spr/+spr-x+)] :h]
 
    [:ld :e [:ix spr/+spr-y+]]
    [:ld :d [:ix (inc spr/+spr-y+)]]
-   (load-arg y)
+   (load-arg env y)
    [:add :hl :de]
    [:ld [:ix spr/+spr-y+] :l]
    [:ld [:ix (inc spr/+spr-y+)] :h]])
 
 (defn sprite-type
-  [n]
-  [(load-arg n)
+  [env n]
+  [(load-arg env n)
    [:ld [:ix spr/+spr-type+] :l]])
 
 (defn sprite-width
-  [n]
-  [(load-arg n)
+  [env n]
+  [(load-arg env n)
    [:ld [:ix spr/+spr-w+] :l]])
 
 (defn sprite-height
-  [n]
-  [(load-arg n)
+  [env n]
+  [(load-arg env n)
    [:ld [:ix spr/+spr-h+] :l]])
 
 (defn if-keydown
-  ([keyname then]
-   (if-keydown keyname then nil))
-  ([keyname then else]
+  ([env keyname then]
+   (if-keydown env keyname then nil))
+  ([env keyname then else]
    (gen-if (fn [l]
              (let [keyname (str/trim (str/upper-case keyname))]
                [(keys/key-down? keyname)
@@ -230,9 +224,9 @@
            then else)))
 
 (defn if-keypressed
-  ([keyname then]
-   (if-keypressed keyname then nil))
-  ([keyname then else]
+  ([env keyname then]
+   (if-keypressed env keyname then nil))
+  ([env keyname then else]
    (gen-if (fn [l]
              (let [keyname (str/trim (str/upper-case keyname))
                    keycode (keys/key-codes keyname)]
@@ -243,39 +237,39 @@
            then else)))
 
 (defn if-cmp
-  ([id cmp num then]
-   (if-cmp id cmp num then nil))
-  ([id cmp num then else]
+  ([env id cmp num then]
+   (if-cmp env id cmp num then nil))
+  ([env id cmp num then else]
    (gen-if (fn [l]
-             (compare-code id num cmp l))
+             (compare-code env id num cmp l))
            then else)))
 
 (defn if-collide
-  ([type then]
-   (if-collide type then nil))
-  ([type then else]
+  ([env type then]
+   (if-collide env type then nil))
+  ([env type then else]
    (gen-if (fn [l]
-             [(load-arg type)
+             [(load-arg env type)
               [:ld :a :l]
               [:call spr/collide]
               [:jp :z l]])
            then else)))
 
 (defn if-tile
-  ([offset-x offset-y type then]
-   (if-tile offset-x offset-y type then nil))
-  ([offset-x offset-y type then else]
+  ([env offset-x offset-y type then]
+   (if-tile env offset-x offset-y type then nil))
+  ([env offset-x offset-y type then else]
    (gen-if (fn [l]
-             [(load-arg offset-x)
+             [(load-arg env offset-x)
               [:ld :a :l]
               [:ld :b :a]
-              (load-arg offset-y)
+              (load-arg env offset-y)
               [:ld :a :l]
               [:ld :c :a]
               [:call spr/get-tile]
               [:ld :b :a]
 
-              (load-arg type)
+              (load-arg env type)
               [:ld :a :l]
 
               [:cp :b]
@@ -283,7 +277,7 @@
            then else)))
 
 (defn load-title
-  [patterns-id colors-id]
+  [env patterns-id colors-id]
   [[:ld :a (fn [] (:page (get-label patterns-id)))]
    [:ld :hl patterns-id]
    [:ld :b (fn [] (:page (get-label colors-id)))]
@@ -291,49 +285,49 @@
    [:call title/load-title]])
 
 (defn return
-  []
+  [env]
   [[:ret]])
 
 (defn assign-val
-  [id n]
-  [(load-arg n)
-   (store-arg id)])
+  [env id n]
+  [(load-arg env n)
+   (store-arg env id)])
 
 (defn assign-add
-  [id arg1 arg2]
-  [(load-arg arg2)
+  [env id arg1 arg2]
+  [(load-arg env arg2)
    [:ex :de :hl]
-   (load-arg arg1)
+   (load-arg env arg1)
    [:add :hl :de]
-   (store-arg id)])
+   (store-arg env id)])
 
 (defn assign-sub
-  [id arg1 arg2]
-  [(load-arg arg2)
+  [env id arg1 arg2]
+  [(load-arg env arg2)
    [:ex :de :hl]
-   (load-arg arg1)
+   (load-arg env arg1)
    [:or :a]
    [:sbc :hl :de]
-   (store-arg id)])
+   (store-arg env id)])
 
 (defn call
-  [func args]
-  (concat (push-args args)
+  [env func args]
+  (concat (push-args env args)
           [[:call func]]
-          (pop-args args)))
+          (pop-args env args)))
 
 (defn animation-end
-  []
+  [env]
   [[:ld [:ix spr/+spr-anim+] 0]
    [:ld [:ix (inc spr/+spr-anim+)] 0]
    [:ret]])
 
 (defn animation-next-frame
-  []
+  [env]
   [[:call spr/animation-next-frame]])
 
 (defn animation-load
-  [res-id]
+  [env res-id]
   [[:ld :hl res-id]
    [:ld [:ix spr/+spr-anim+] :l]
    [:ld [:ix (inc spr/+spr-anim+)] :h]
@@ -342,30 +336,30 @@
    [:ret]])
 
 (defn music-load
-  [res-id]
+  [env res-id]
   [[:ld :hl res-id]
    [:ld :a (fn [] (:page (get-label res-id)))]
    [:call music/play-music]])
 
 (defn music-stop
-  [res-id]
+  [env res-id]
   [[:call music/stop-music]])
 
 (defn sfx-load
-  [res-id]
+  [env res-id]
   [[:ld :hl res-id]
    [:ld :a (fn [] (:page (get-label res-id)))]
    [:call music/load-sfx]])
 
 (defn sfx-play
-  [n]
-  [(load-arg n)
+  [env n]
+  [(load-arg env n)
    [:ld :a :l]
    [:ld :c 0]
    [:call music/play-sfx]])
 
 (defn tilemap-load
-  [patterns-id colors-id attrs-id lines-id map-id types-id]
+  [env patterns-id colors-id attrs-id lines-id map-id types-id]
   [;; name
    [:call tilemap/clear-name]
    [:di]
@@ -391,40 +385,40 @@
    [:ei]])
 
 (defn scroll-right
-  []
+  [env]
   [[:call tilemap/scroll-right]])
 
 (defn scroll-left
-  []
+  [env]
   [[:call tilemap/scroll-left]])
 
 (defn screen-load
-  [init-id update-id]
+  [env init-id update-id]
   [[:ld :hl init-id]
    [:ld :de update-id]
    [:call scr/load-screen]])
 
 (defn set-tile
-  [x y n]
-  [(load-arg n)
+  [env x y n]
+  [(load-arg env n)
    [:ld :a :l]
    [:ld :c :a]
-   (load-arg y)
+   (load-arg env y)
    [:ld :a :l]
    [:ld :b :a]
-   (load-arg x)
+   (load-arg env x)
    [:ld :a :l]
    [:call off/set-tile]])
 
 (defn write-str
-  [x y str]
+  [env x y str]
   (let [str-label  (keyword (gensym))
         next-label (keyword (gensym))]
     [[:ld :de str-label]
-     (load-arg y)
+     (load-arg env y)
      [:ld :a :l]
      [:ld :b :a]
-     (load-arg x)
+     (load-arg env x)
      [:ld :a :l]
      [:call off/write-print]
      [:jr next-label]
