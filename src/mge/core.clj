@@ -76,4 +76,9 @@
   (compile-resources)
   (build-asm-image-file "game.rom" :mge-konami5)
   (build-sym-file "game.sym")
-  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice"))
+  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice")
+  (when *command-line-args*
+    (System/exit 0)))
+
+(when-not *command-line-args*
+  (-main))
