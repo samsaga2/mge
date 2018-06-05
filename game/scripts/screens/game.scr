@@ -6,7 +6,7 @@ sub init
     new sprite, "missile.scr", 1656 ' 207*8
     new sprite, "missile.scr", 1528 ' 191*8
     new sprite, "missile.scr", 1400 ' 175*8
-    ' load music, "oldskool.pt3"
+    load music, "oldskool.pt3"
     load sfx, "effects.afb"
     global0 = 0 ' num of player bullets
     global1 = 0 ' scroll
