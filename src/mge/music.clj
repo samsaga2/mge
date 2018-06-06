@@ -16,7 +16,11 @@
 (defasmbyte music-page)
 (defasmbyte sfx-page)
 
-(let [replayer-bin (incbin "resources/pt3.bin")]
+(defmacro replayer-bin
+  []
+  (incbin "resources/pt3.bin"))
+
+(let [replayer-bin (replayer-bin)]
   (def replayer-size (-> replayer-bin second count))
   (defasmproc replayer {}
     replayer-bin))
