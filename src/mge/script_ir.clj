@@ -215,67 +215,57 @@
    [:ld [:ix spr/+spr-h+] :l]])
 
 (defn if-keydown
-  ([env keyname then]
-   (if-keydown env keyname then nil))
-  ([env keyname then else]
-   (gen-if (fn [l]
-             (let [keyname (str/trim (str/upper-case keyname))]
-               [(keys/key-down? keyname)
-                [:jp :nz l]]))
-           then else)))
+  [env keyname then else]
+  (gen-if (fn [l]
+            (let [keyname (str/trim (str/upper-case keyname))]
+              [(keys/key-down? keyname)
+               [:jp :nz l]]))
+          then else))
 
 (defn if-keypressed
-  ([env keyname then]
-   (if-keypressed env keyname then nil))
-  ([env keyname then else]
-   (gen-if (fn [l]
-             (let [keyname (str/trim (str/upper-case keyname))
-                   keycode (keys/key-codes keyname)]
-               [[:ld :e (:row keycode)]
-                [:ld :c (:bit keycode)]
-                [:call keys/key-pressed?]
-                [:jp :nz l]]))
-           then else)))
+  [env keyname then else]
+  (gen-if (fn [l]
+            (let [keyname (str/trim (str/upper-case keyname))
+                  keycode (keys/key-codes keyname)]
+              [[:ld :e (:row keycode)]
+               [:ld :c (:bit keycode)]
+               [:call keys/key-pressed?]
+               [:jp :nz l]]))
+          then else))
 
 (defn if-cmp
-  ([env id cmp num then]
-   (if-cmp env id cmp num then nil))
-  ([env id cmp num then else]
-   (gen-if (fn [l]
-             (compare-code env id num cmp l))
-           then else)))
+  [env id cmp num then else]
+  (gen-if (fn [l]
+            (compare-code env id num cmp l))
+          then else))
 
 (defn if-collide
-  ([env type then]
-   (if-collide env type then nil))
-  ([env type then else]
-   (gen-if (fn [l]
-             [(load-arg env type)
-              [:ld :a :l]
-              [:call spr/collide]
-              [:jp :z l]])
-           then else)))
+  [env type then else]
+  (gen-if (fn [l]
+            [(load-arg env type)
+             [:ld :a :l]
+             [:call spr/collide]
+             [:jp :z l]])
+          then else))
 
 (defn if-tile
-  ([env offset-x offset-y type then]
-   (if-tile env offset-x offset-y type then nil))
-  ([env offset-x offset-y type then else]
-   (gen-if (fn [l]
-             [(load-arg env offset-x)
-              [:ld :a :l]
-              [:ld :b :a]
-              (load-arg env offset-y)
-              [:ld :a :l]
-              [:ld :c :a]
-              [:call spr/get-tile]
-              [:ld :b :a]
+  [env offset-x offset-y type then else]
+  (gen-if (fn [l]
+            [(load-arg env offset-x)
+             [:ld :a :l]
+             [:ld :b :a]
+             (load-arg env offset-y)
+             [:ld :a :l]
+             [:ld :c :a]
+             [:call spr/get-tile]
+             [:ld :b :a]
 
-              (load-arg env type)
-              [:ld :a :l]
+             (load-arg env type)
+             [:ld :a :l]
 
-              [:cp :b]
-              [:jp :nz l]])
-           then else)))
+             [:cp :b]
+             [:jp :nz l]])
+          then else))
 
 (defn load-title
   [env patterns-id colors-id]

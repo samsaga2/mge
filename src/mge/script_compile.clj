@@ -119,33 +119,37 @@
 
          :else nil))
 
+(defn- compile-cmp
+  [env cmp then else]
+  (let [then (compile-ops env then)
+        else (when-not (empty? else)
+               (compile-ops env else))]
+    (match cmp
+           [:if-keydown [:str key]]
+           [(ir/if-keydown env key then else)]
+
+           [:if-keypressed [:str key]]
+           [(ir/if-keypressed env key then else)]
+
+           [:if-cmp i j k]
+           [(ir/if-cmp env i j k then else)]
+
+           [:if-collide n]
+           [(ir/if-collide env n then else)]
+
+           [:if-tile x y type]
+           [(ir/if-tile env x y type then else)])))
+
 (defn- compile-if-ops
   [env op]
-  (let [compile-if (fn [env condfn then]
-                     (if (= (some-> then last first) :else)
-                       (let [else (rest (last then))
-                             then (drop-last then)]
-                         [(condfn
-                           (compile-ops env then)
-                           (compile-ops env else))])
-                       [(condfn (compile-ops env then))]))]
-    (match op
-           [:if-ops [:if-keydown [:str key]] [:then & then]]
-           (compile-if env (partial ir/if-keydown env key) then)
+  (match op
+         [:if-ops cmp [:then & then]]
+         (compile-cmp env cmp then nil)
 
-           [:if-ops [:if-keypressed [:str key]] [:then & then]]
-           (compile-if env (partial ir/if-keypressed env key) then)
+         [:if-ops cmp [:then & then] [:else & else]]
+         (compile-cmp env cmp then else)
 
-           [:if-ops [:if-cmp id cmp n] [:then & then]]
-           (compile-if env (partial ir/if-cmp env id cmp n) then)
-
-           [:if-ops [:if-collide n] [:then & then]]
-           (compile-if env (partial ir/if-collide env n) then)
-
-           [:if-ops [:if-tile x y type] [:then & then]]
-           (compile-if env (partial ir/if-tile env x y type) then)
-
-           :else nil)))
+         :else nil))
 
 (defn- compile-op
   [env op]
@@ -261,3 +265,10 @@
   (binding [*script-file* file]
     (let [p (animation-parser file)]
       (compile-animation-prog p))))
+
+(let [script    (insta/parser (io/resource "script.bnf") :string-ci true)]
+  (script "sub main
+if keydown \"left\" then
+return
+endif
+endsub"))
