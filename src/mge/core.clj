@@ -7,7 +7,6 @@
             [mge.resources :refer [compile-resources]]
             [mge.sprites :as spr]
             [mge.screens :as scr]
-            [mge.script :as s]
             [mge.keys :as keys]
             [mge.music :as music]
             [mge.tilemap :as tilemap]
@@ -28,7 +27,6 @@
   [:call bios/CHGMOD]
   [:call music/init-music]
   [:call off/init-offscreen]
-  [:call s/init-scripts]
   [:call spr/init-sprites]
   [:call scr/init-screens]
   [:jp keys/init-keys])
@@ -71,14 +69,14 @@
   [:call install-hook]
   (label :loop [:jr :loop]))
 
-(defn -main
-  [& args]
+(defn- build-and-run
+  []
   (compile-resources)
   (build-asm-image-file "game.rom" :mge-konami5)
   (build-sym-file "game.sym")
-  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice")
-  (when *command-line-args*
-    (System/exit 0)))
+  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice"))
 
-(when-not *command-line-args*
-  (-main))
+(defn -main
+  [& args]
+  (build-and-run)
+  (System/exit 0))
