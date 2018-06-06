@@ -6,7 +6,8 @@
             [mge.script-ir :as ir]
             [mge.script :as s]
             [clojure.string :as str]
-            [mge.sprites :as spr]))
+            [mge.sprites :as spr]
+            [clj-z80.asm :refer [make-var]]))
 
 
 ;; script prog
@@ -188,12 +189,10 @@
   [env id]
   (let [globals (:globals @env)]
     (when-not (get @globals id)
-      (let [free-globals (:free-globals @env)
-            global       {:type :global
-                          :addr (first @free-globals)}]
-        (when (empty? @free-globals)
-          (throw (Exception. "Too many globals")))
-        (reset! free-globals (rest @free-globals))
+      (let [var-id (keyword (gensym))
+            global {:type :global
+                    :addr var-id}]
+        (make-var var-id 2)
         (swap! globals assoc id global)
         (swap! env assoc :env (assoc (:env @env) id global)))
       nil)))
@@ -210,12 +209,10 @@
          [:global [:id id]]
          (compile-global env id)))
 
-(let [globals      (atom {})
-      free-globals (atom s/globals)]
+(let [globals (atom {})]
   (defn- compile-script-prog
     [prog]
     (let [env (atom {:env          (merge (ir/default-env) @globals)
-                     :free-globals free-globals
                      :globals      globals
                      :local-index  0})]
       (match prog
