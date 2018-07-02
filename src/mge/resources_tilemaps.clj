@@ -142,7 +142,7 @@
              (+ (* (count set-lines) h)
                 w))
     (make-proc attr-id res-pages [(dw w h)])
-    (make-proc lines-id res-pages [[:db (apply concat set-lines)]])
+    (make-proc lines-id res-pages [(apply db (apply concat set-lines))])
     (make-proc map-id res-pages [(apply dw map-lines)])))
 
 
