@@ -1,5 +1,7 @@
 global nbullets
 global scroll
+global lives
+global score
 
 sub init
     load tilemap, "level1.tmx"
@@ -11,10 +13,16 @@ sub init
     new sprite, "missile.scr", 1400 ' 175*8
     load music, "oldskool.pt3"
     load sfx, "effects.afb"
+
     nbullets = 0
     scroll = 0
+    score = 0
+    lives = 3
+
     print 1, 23, "SCORE 000000"
-    print 25, 23, "LIVE 3"
+    print 25, 23, "LIVE"
+    zprint 7, 23, score
+    print 30, 23, lives
 endsub
 
 sub update

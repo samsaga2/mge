@@ -1,3 +1,4 @@
+global score
 property state ' 0-normal 1-explosion
 
 sub init
@@ -14,6 +15,8 @@ sub update
     endif
 
     if collide 3 then
+       score = score + 1
+       zprint 7, 23, score
        state = 1
        load animation, "missile_explosion.scr"
        return

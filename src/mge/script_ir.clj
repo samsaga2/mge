@@ -371,7 +371,29 @@
      [:ld :b :a]
      (load-arg env x)
      [:ld :a :l]
-     [:call off/write-print]
+     [:call off/write-str]
      [:jr next-label]
      (label str-label (db str) (db 0))
      (label next-label)]))
+
+(defn write-num
+  [env x y arg]
+  [(load-arg env arg)
+   [:ex :de :hl]
+   (load-arg env y)
+   [:ld :a :l]
+   [:ld :b :a]
+   (load-arg env x)
+   [:ld :a :l]
+   [:call off/write-num]])
+
+(defn write-znum
+  [env x y arg]
+  [(load-arg env arg)
+   [:ex :de :hl]
+   (load-arg env y)
+   [:ld :a :l]
+   [:ld :b :a]
+   (load-arg env x)
+   [:ld :a :l]
+   [:call off/write-znum]])

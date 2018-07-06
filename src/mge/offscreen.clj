@@ -60,7 +60,7 @@
   [:ld [dirty] :a]
   [:ret])
 
-(defasmproc write-print {:page :code}
+(defasmproc write-str {:page :code}
   ;; a=x b=y de=str
   [:ld :l :b]
   [:ld :h 0]
@@ -84,3 +84,104 @@
          [:inc :hl]
          [:inc :de]
          [:jp :loop]))
+
+(defasmbyte write-num-skip)
+
+(defasmproc write-num {:page :code}
+  ;; a=x b=y de=num
+  [:ld :l :b]
+  [:ld :h 0]
+  (m/mul-hl-by-pow2 32)
+
+  [:ld :c :a]
+  [:ld :b 0]
+  [:add :hl :bc]
+
+  [:ld :bc offscreen]
+  [:add :hl :bc]
+
+  [:ex :de :hl]
+
+  [:ld :a 1]
+  [:ld [dirty] :a]
+
+  [:xor :a]
+  [:ld [write-num-skip] :a]
+
+  [:ld :bc -10000]
+  [:call :num1]
+  [:ld :bc -1000]
+  [:call :num1]
+  [:ld :bc -100]
+  [:call :num1]
+  [:ld :bc -10]
+  [:call :num1]
+  [:ld :bc -1]
+  (label :num1
+         [:ld :a 47])
+  (label :num2
+         [:inc :a]
+         [:add :hl :bc]
+         [:jr :c :num2]
+         [:sbc :hl :bc]
+         [:jp :put-char])
+  (label :put-char
+         [:cp 48]
+         [:jp :nz :put-char-final]
+         ;; skip zeros
+         [:push :af]
+         [:ld :a [write-num-skip]]
+         [:or :a]
+         [:jp :z :no-put-char]
+         [:pop :af])
+
+  (label :put-char-final
+         [:ld [:de] :a]
+         [:inc :de]
+         [:ld :a 1]
+         [:ld [write-num-skip] :a]
+         [:ret])
+  (label :no-put-char
+         [:pop :af]
+         [:ret]))
+
+
+(defasmproc write-znum {:page :code}
+  ;; a=x b=y de=num
+  [:ld :l :b]
+  [:ld :h 0]
+  (m/mul-hl-by-pow2 32)
+
+  [:ld :c :a]
+  [:ld :b 0]
+  [:add :hl :bc]
+
+  [:ld :bc offscreen]
+  [:add :hl :bc]
+
+  [:ex :de :hl]
+
+  [:ld :a 1]
+  [:ld [dirty] :a]
+
+  [:ld :bc -10000]
+  [:call :num1]
+  [:ld :bc -1000]
+  [:call :num1]
+  [:ld :bc -100]
+  [:call :num1]
+  [:ld :bc -10]
+  [:call :num1]
+  [:ld :bc -1]
+  (label :num1
+         [:ld :a 47])
+  (label :num2
+         [:inc :a]
+         [:add :hl :bc]
+         [:jr :c :num2]
+         [:sbc :hl :bc]
+         [:jp :put-char])
+  (label :put-char
+         [:ld [:de] :a]
+         [:inc :de]
+         [:ret]))

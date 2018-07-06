@@ -13,7 +13,7 @@ property = <'property'> <ws> id
 global = <'global'> <ws> id
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str|sprite-delete) <nl-comment>+
+<op> = <ws>? (load|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print|sprite-delete) <nl-comment>+
 
 <arg> = (id|num)
 
@@ -48,4 +48,8 @@ assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
 scroll-right = <'right'>
 scroll-left = <'left'>
 set-tile = <'set'> <ws> <'tile'> <ws> arg <comma> arg <comma> arg
+
+<print> = (print-str|print-num|zprint-num)
 print-str = <'print'> <ws> arg <comma> arg <comma> str
+print-num = <'print'> <ws> arg <comma> arg <comma> arg
+zprint-num = <'zprint'> <ws> arg <comma> arg <comma> arg

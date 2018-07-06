@@ -103,6 +103,12 @@
          [:print-str x y [:str str]]
          [(ir/write-str env x y str)]
 
+         [:print-num x y arg]
+         [(ir/write-num env x y arg)]
+
+         [:zprint-num x y arg]
+         [(ir/write-znum env x y arg)]
+
          :else nil))
 
 (defn- compile-cmp
