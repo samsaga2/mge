@@ -1,37 +1,37 @@
-type 0 ' to disable colisions
+type = 0 ' to disable colisions
 load image, "expl1.png"
-move -4, 0
+x = x - 4
 next frame
 next frame
-move -4, 0
+x = x - 4
 next frame
 next frame
 load image, "expl2.png"
-move -4, 0
+x = x - 4
 next frame
 next frame
-move -4, 0
+x = x - 4
 next frame
 next frame
 load image, "expl3.png"
-move -4, 0
+x = x - 4
 next frame
 next frame
-move -4, 0
+x = x - 4
 next frame
 next frame
 load image, "expl4.png"
-move -4, 0
+x = x - 4
 next frame
 next frame
-move -4, 0
+x = x - 4
 next frame
 next frame
 load image, "expl5.png"
-move -4, 0
+x = x - 4
 next frame
 next frame
-move -4, 0
+x = x - 4
 next frame
 next frame
 delete

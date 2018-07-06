@@ -3,11 +3,12 @@ global nbullets
 sub init
     nbullets = nbullets + 1
     load image, "bullet.png"
-    type 3
-    width 2
-    height 2
-    pos arg0, arg1
-    move 48, 0
+    type = 3
+    width = 2
+    height = 2
+    x = arg0
+    y = arg1
+    x = x + 48
     sfx play 0
 endsub
 
@@ -27,7 +28,7 @@ sub update
         return
     endif
 
-    move 32, 0
+    x = x + 32
 endsub
 
 sub kill_bullet

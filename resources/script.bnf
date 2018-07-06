@@ -13,19 +13,13 @@ property = <'property'> <ws> id
 global = <'global'> <ws> id
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|sprite-ops|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str) <nl-comment>+
+<op> = <ws>? (load|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print-str|sprite-delete) <nl-comment>+
 
 <arg> = (id|num)
 
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
 
-<sprite-ops> = (sprite-pos|sprite-move|sprite-type|sprite-width|sprite-height|sprite-delete)
-sprite-pos = <'pos'> <ws> arg <comma> arg
-sprite-move = <'move'> <ws> arg <comma> arg
-sprite-type = <'type'> <ws> arg
-sprite-width = <'width'> <ws> arg
-sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
 
 if-ops = (<'if'> <ws> cmp <ws> then else <'endif'>|<'if'> <ws> cmp <ws> then <'endif'>)

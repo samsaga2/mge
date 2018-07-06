@@ -174,46 +174,6 @@
    [:ld :a (fn [] (:page (get-label res-id)))]
    [:ld [:ix (inc spr/+spr-anim-page+)] :a]])
 
-(defn sprite-pos
-  [env x y]
-  [(load-arg env x)
-   [:ld [:ix spr/+spr-x+] :l]
-   [:ld [:ix (inc spr/+spr-x+)] :h]
-   (load-arg env y)
-   [:ld [:ix spr/+spr-y+] :l]
-   [:ld [:ix (inc spr/+spr-y+)] :h]])
-
-(defn sprite-move
-  [env x y]
-  [[:ld :e [:ix spr/+spr-x+]]
-   [:ld :d [:ix (inc spr/+spr-x+)]]
-   (load-arg env x)
-   [:add :hl :de]
-   [:ld [:ix spr/+spr-x+] :l]
-   [:ld [:ix (inc spr/+spr-x+)] :h]
-
-   [:ld :e [:ix spr/+spr-y+]]
-   [:ld :d [:ix (inc spr/+spr-y+)]]
-   (load-arg env y)
-   [:add :hl :de]
-   [:ld [:ix spr/+spr-y+] :l]
-   [:ld [:ix (inc spr/+spr-y+)] :h]])
-
-(defn sprite-type
-  [env n]
-  [(load-arg env n)
-   [:ld [:ix spr/+spr-type+] :l]])
-
-(defn sprite-width
-  [env n]
-  [(load-arg env n)
-   [:ld [:ix spr/+spr-w+] :l]])
-
-(defn sprite-height
-  [env n]
-  [(load-arg env n)
-   [:ld [:ix spr/+spr-h+] :l]])
-
 (defn if-keydown
   [env keyname then else]
   (gen-if (fn [l]

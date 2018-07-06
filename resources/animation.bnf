@@ -11,7 +11,7 @@ comma = <ws>? <','> <ws>?
 
 <arg> = (id|num)
 
-<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-ops|music-stop|sfx-play|scroll|set-tile|print-str)
+<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-delete|music-stop|sfx-play|scroll|set-tile|print-str|assign)
 
 anim-load = <'load'> <ws> 'animation' <comma> str
 load = <'load'> <ws> ('image'|'title'|'music'|'sfx'|'screen') <comma> str
@@ -22,13 +22,12 @@ sfx-play = <'sfx'> <ws> <'play'> <ws> arg
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
 
-<sprite-ops> = (sprite-pos|sprite-move|sprite-type|sprite-width|sprite-height|sprite-delete)
-sprite-pos = <'pos'> <ws> arg <comma> arg
-sprite-move = <'move'> <ws> arg <comma> arg
-sprite-type = <'type'> <ws> arg
-sprite-width = <'width'> <ws> arg
-sprite-height = <'height'> <ws> arg
 sprite-delete = <'delete'>
+
+<assign> = (assign-val|assign-add|assign-sub)
+assign-val = id <ws>? <'='> <ws>? arg
+assign-add = id <ws>? <'='> <ws>? arg <ws>? <'+'> <ws>? arg
+assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
 
 <scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
 scroll-right = <'right'>

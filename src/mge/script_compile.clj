@@ -25,21 +25,6 @@
                          (make-sprite-script-id s :update)
                          args)]
 
-         [:sprite-pos x y]
-         [(ir/sprite-pos env x y)]
-
-         [:sprite-move x y]
-         [(ir/sprite-move env x y)]
-
-         [:sprite-type n]
-         [(ir/sprite-type env n)]
-
-         [:sprite-width n]
-         [(ir/sprite-width env n)]
-
-         [:sprite-height n]
-         [(ir/sprite-height env n)]
-
          [:sprite-delete]
          [(ir/sprite-delete env)]
 
@@ -262,10 +247,3 @@
   (binding [*script-file* file]
     (let [p (animation-parser file)]
       (compile-animation-prog p))))
-
-(let [script    (insta/parser (io/resource "script.bnf") :string-ci true)]
-  (script "sub main
-if keydown \"left\" then
-return
-endif
-endsub"))

@@ -6,10 +6,11 @@ property is_dead
 
 sub init
     load animation, "player_idle.scr"
-    type 1
-    width 6
-    height 7
-    pos 800, 800
+    type = 1
+    width = 6
+    height = 7
+    x = 800
+    y = 800
 
     state = 0
     is_dead = 0
@@ -25,25 +26,25 @@ sub update
     ' move player
     if keydown "left" then
         if x > 0 then
-            move -8, 0
+            x = x - 8
             next_state = 1
         endif
     endif
     if keydown "right" then
         if x < 1912 then
-            move 8, 0
+            x = x + 8
             next_state = 1
         endif
     endif
     if keydown "up" then
         if y > 0 then
-            move 0, -8
+            y = y - 8
             next_state = 1
         endif
     endif
     if keydown "down" then
         if y < 1400 then
-            move 0, 8
+            y = y + 8
             next_state = 1
         endif
     endif

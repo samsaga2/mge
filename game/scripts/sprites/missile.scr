@@ -2,9 +2,9 @@ property state ' 0-normal 1-explosion
 
 sub init
     load image, "missile.png"
-    type 2
+    type = 2
     call random_y
-    pos arg0, y
+    x = arg0
     state = 0
 endsub
 
@@ -19,14 +19,15 @@ sub update
        return
     endif
 
-    move -8, 0
+    x = x - 8
     if x <= 0 then
        call random_y
     endif
 endsub
 
 sub random_y
-    pos 2040, rnd
+    x = 2040
+    y = rnd
     if y > 1152 then
        call random_y
     endif
