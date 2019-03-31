@@ -6,7 +6,8 @@
             [mge.resources-tilemaps :refer [make-tilemap]]
             [mge.script-compile :as sc][mge.resources-id :refer :all]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.pprint :as pp])
   (:import [java.io File FileInputStream]))
 
 
@@ -118,15 +119,27 @@
        (into {})
        doall))
 
+(defn- write-asm-code
+  [asm-file func-id func-asm]
+  (when asm-file
+    (let [asm-code (with-out-str
+                     (println "FUNCTION" func-id)
+                     (pp/pprint func-asm)
+                     (println)
+                     (println))]
+      (spit asm-file asm-code :append true))))
+  
 (defn- make-scripts
-  [scripts]
+  [scripts asm-file]
   (doseq [[res-id script] scripts]
     (let [non-script [[:ret]]
           script     (get scripts res-id)
           script     (merge {:update nil} script)]
       (doseq [[func-name func-asm] script]
-        (let [func-id (keyword (str (name res-id) "-" (name func-name)))]
-          (make-proc func-id script-pages (or func-asm non-script)))))))
+        (let [func-id  (keyword (str (name res-id) "-" (name func-name)))
+              func-asm (or func-asm non-script)]
+          (write-asm-code asm-file func-id func-asm)
+          (make-proc func-id script-pages func-asm))))))
 
 
 ;; titles
@@ -201,12 +214,17 @@
 ;; core
 
 (defn compile-resources
-  []
+  [asm-file]
+  ;; truncate asm file
+  (when asm-file
+    (spit asm-file ""))
+  ;; compile misc resources
   (make-sprites)
   (make-titles)
   (make-music)
   (make-sfx)
   (make-tilemaps)
-  (make-scripts (compile-screen-scripts))
-  (make-scripts (compile-sprite-scripts))
-  (make-scripts (compile-animation-scripts)))
+  ;; compile code resource
+  (make-scripts (compile-screen-scripts) asm-file)
+  (make-scripts (compile-sprite-scripts) asm-file)
+  (make-scripts (compile-animation-scripts) asm-file))

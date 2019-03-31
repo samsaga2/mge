@@ -71,10 +71,11 @@
   (label :loop [:jr :loop]))
 
 (defn- build-and-run
-  [{:keys [sym name run-openmsx]}]
+  [{:keys [sym name run-openmsx asm-code]}]
   (let [rom-file (str name ".rom")
-        sym-file (str name ".sym")]
-    (compile-resources)
+        sym-file (str name ".sym")
+        asm-file (when asm-code (str name ".asm"))]
+    (compile-resources asm-file)
     (build-asm-image-file rom-file :mge-konami5)
     (when sym
       (build-sym-file sym-file))
@@ -87,7 +88,8 @@
     :default nil]
    ["-n" "--name GAME" "Change the output filename"
     :default "game"]
-   ["-r" "--run-openmsx" "Execute openmsx after compile"]])
+   ["-r" "--run-openmsx" "Execute openmsx after compile"]
+   ["-a" "--asm-code" "Generate pseudo-asm file"]])
 
 (defn -main
   [& args]
