@@ -3,6 +3,7 @@
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sysvars :as sysvars]
+            [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.shell :refer [sh]]
             [mge.resources :refer [compile-resources]]
             [mge.sprites :as spr]
@@ -70,13 +71,26 @@
   (label :loop [:jr :loop]))
 
 (defn- build-and-run
-  []
-  (compile-resources)
-  (build-asm-image-file "game.rom" :mge-konami5)
-  (build-sym-file "game.sym")
-  (sh "openmsx" "-carta" "game.rom" "-ext" "debugdevice"))
+  [{:keys [sym name run-openmsx]}]
+  (let [rom-file (str name ".rom")
+        sym-file (str name ".sym")]
+    (compile-resources)
+    (build-asm-image-file rom-file :mge-konami5)
+    (when sym
+      (build-sym-file sym-file))
+    (when run-openmsx
+      (sh "openmsx" "-carta" rom-file "-ext" "debugdevice"))))
+
+(def mge-options
+  [["-s" "--sym" "Generate sym file"]
+   ["-c" "--chdir DIR" "Game folder to compile"
+    :default nil]
+   ["-n" "--name GAME" "Change the output filename"
+    :default "game"]
+   ["-r" "--run-openmsx" "Execute openmsx after compile"]])
 
 (defn -main
   [& args]
-  (build-and-run)
+  (let [args (parse-opts args mge-options)]
+    (build-and-run (:options args)))
   (System/exit 0))
