@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
-            [mge.script-ir :as ir]
+            [mge.script-gencode :as gc]
             [mge.script :as s]
             [clojure.string :as str]
             [mge.sprites :as spr]
@@ -20,13 +20,13 @@
   [env op]
   (match op
          [:new-sprite [:str s] & args]
-         [(ir/new-sprite env
+         [(gc/new-sprite env
                          (make-sprite-script-id s :init)
                          (make-sprite-script-id s :update)
                          args)]
 
          [:sprite-delete]
-         [(ir/sprite-delete env)]
+         [(gc/sprite-delete env)]
 
          :else nil))
 
@@ -35,29 +35,29 @@
   (match op
          [:load type [:str s]]
          (case type
-           "image"     [(ir/sprite-image env
+           "image"     [(gc/sprite-image env
                                          (make-sprite-id s)
                                          (make-sprite-color1-id s)
                                          (make-sprite-color2-id s))]
-           "title"     [(ir/load-title env
+           "title"     [(gc/load-title env
                                        (make-title-pattern-id s)
                                        (make-title-color-id s))]
-           "animation" [(ir/sprite-animation env (make-animation-script-id s :update))]
-           "music"     [(ir/music-load env (make-music-id s))]
-           "sfx"       [(ir/sfx-load env (make-sfx-id s))]
-           "tilemap"   [(ir/tilemap-load env
+           "animation" [(gc/sprite-animation env (make-animation-script-id s :update))]
+           "music"     [(gc/music-load env (make-music-id s))]
+           "sfx"       [(gc/sfx-load env (make-sfx-id s))]
+           "tilemap"   [(gc/tilemap-load env
                                          (make-tilemap-id s :pattern)
                                          (make-tilemap-id s :colors)
                                          (make-tilemap-id s :attr)
                                          (make-tilemap-id s :lines)
                                          (make-tilemap-id s :map)
                                          (make-tilemap-id s :types))]
-           "screen" [(ir/screen-load env
+           "screen" [(gc/screen-load env
                                      (make-screen-script-id s :init)
                                      (make-screen-script-id s :update))])
 
          [:anim-load "animation" [:str s]]
-         [(ir/animation-load env (make-animation-script-id s :update))]
+         [(gc/animation-load env (make-animation-script-id s :update))]
 
          :else nil))
 
@@ -65,43 +65,43 @@
   [env op]
   (match op
          [:return]
-         [(ir/return env)]
+         [(gc/return env)]
 
          [:assign id arg]
-         [(ir/assign env id arg)]
+         [(gc/assign env id arg)]
 
          [:call [:id s] & args]
-         [(ir/call env
+         [(gc/call env
                    (make-sprite-script-id (.getName *script-file*)
                                           (keyword s))
                    args)]
 
          [:next-frame]
-         [(ir/animation-next-frame env)]
+         [(gc/animation-next-frame env)]
 
          [:music-stop]
-         [(ir/music-stop env)]
+         [(gc/music-stop env)]
 
          [:sfx-play arg]
-         [(ir/sfx-play env arg)]
+         [(gc/sfx-play env arg)]
 
          [:scroll-left]
-         [(ir/scroll-left env)]
+         [(gc/scroll-left env)]
 
          [:scroll-right]
-         [(ir/scroll-right env)]
+         [(gc/scroll-right env)]
 
          [:set-tile x y n]
-         [(ir/set-tile env x y n)]
+         [(gc/set-tile env x y n)]
 
          [:print-str x y [:str str]]
-         [(ir/write-str env x y str)]
+         [(gc/write-str env x y str)]
 
          [:print-num x y arg]
-         [(ir/write-num env x y arg)]
+         [(gc/write-num env x y arg)]
 
          [:zprint-num x y arg]
-         [(ir/write-znum env x y arg)]
+         [(gc/write-znum env x y arg)]
 
          :else nil))
 
@@ -112,19 +112,19 @@
                (compile-ops env else))]
     (match cmp
            [:if-keydown [:str key]]
-           [(ir/if-keydown env key then else)]
+           [(gc/if-keydown env key then else)]
 
            [:if-keypressed [:str key]]
-           [(ir/if-keypressed env key then else)]
+           [(gc/if-keypressed env key then else)]
 
            [:if-cmp i j k]
-           [(ir/if-cmp env i j k then else)]
+           [(gc/if-cmp env i j k then else)]
 
            [:if-collide n]
-           [(ir/if-collide env n then else)]
+           [(gc/if-collide env n then else)]
 
            [:if-tile x y type]
-           [(ir/if-tile env x y type then else)])))
+           [(gc/if-tile env x y type then else)])))
 
 (defn- compile-if-ops
   [env op]
@@ -155,7 +155,7 @@
   [(keyword id)
    (doall
     (concat (compile-ops (:env @env) ops)
-            (ir/end env)))])
+            (gc/end env)))])
 
 (defn- compile-property
   [env id]
@@ -197,7 +197,7 @@
 (let [globals (atom {})]
   (defn- compile-script-prog
     [prog]
-    (let [env (atom {:env          (merge (ir/default-env) @globals)
+    (let [env (atom {:env          (merge (gc/default-env) @globals)
                      :globals      globals
                      :local-index  0})]
       (match prog
@@ -209,11 +209,11 @@
 
 (defn- compile-animation-prog
   [prog]
-  (let [env (ir/default-env)]
+  (let [env (gc/default-env)]
     (match prog
            [:prog & ops]
            (->> (concat (compile-ops env ops)
-                        (ir/animation-end env))
+                        (gc/animation-end env))
                 vec
                 doall))))
 

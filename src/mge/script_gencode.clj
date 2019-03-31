@@ -1,4 +1,4 @@
-(ns mge.script-ir
+(ns mge.script-gencode
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.image :refer [set-konami5-page]]
             [clj-z80.image :refer [get-label]]
