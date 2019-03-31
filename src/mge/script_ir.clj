@@ -4,6 +4,8 @@
             [clj-z80.image :refer [get-label]]
             [clj-z80.msx.lib.bios :as bios]
             [clojure.string :as str]
+            [clojure.core.match :refer [match]]
+
             [mge.sprites :as spr]
             [mge.keys :as keys]
             [mge.title :as title]
@@ -44,21 +46,93 @@
 
 ;; args
 
+(declare load-arg)
+
+(defn- load-arg-id
+  [env id]
+  (if (= (str/lower-case id) "rnd")
+    [[:call u/random-word]]
+    (if-let [v (get-env-var env id)]
+      (let [i (:addr v)]
+        (case (:type v)
+          :local [[:ld :l [:ix i]]
+                  [:ld :h [:ix (inc i)]]]
+          :global [[:ld :hl [i]]]))
+      (throw (Exception. "Uknown variable " id))))) 
+
+(defn- load-arg-num
+  [n]
+  [[:ld :hl (Integer. n)]])
+
+(defn- load-arg-mul
+  [env i j]
+  (match [i j]
+
+         [[:num n1] [:num n2]]
+         [[:ld :hl (int (* (Integer. n1) (Integer. n2)))]]
+
+         :else
+         (throw (Exception. "Not supported"))))
+
+(defn- load-arg-div
+  [env i j]
+  (match [i j]
+
+         [[:num n1] [:num n2]]
+         [[:ld :hl (int (/ (Integer. n1) (Integer. n2)))]]
+
+         :else
+         (throw (Exception. "Not supported"))))
+
+(defn- load-arg-add
+  [env i j]
+  (match [i j]
+
+         [[:num n1] [:num n2]]
+         (+ (Integer. n1) (Integer. n2))
+
+         :else
+         (concat (load-arg env j)
+                 [[:push :hl]]
+                 (load-arg env i)
+                 [[:pop :de]
+                  [:add :hl :de]])))
+
+(defn- load-arg-sub
+  [env i j]
+  (match [i j]
+
+         [[:num n1] [:num n2]]
+         (+ (Integer. n1) (Integer. n2))
+
+         :else
+         (concat (load-arg env j)
+                 [[:push :hl]]
+                 (load-arg env i)
+                 [[:pop :de]
+                  [:or :a]
+                  [:sbc :hl :de]]))) 
+
 (defn- load-arg
   [env arg]
-  (let [type (first arg)
-        id   (second arg)]
-    (case type
-      :id  (if (= (str/lower-case id) "rnd")
-             [[:call u/random-word]]
-             (if-let [v (get-env-var env id)]
-               (let [i (:addr v)]
-                 (case (:type v)
-                   :local [[:ld :l [:ix i]]
-                           [:ld :h [:ix (inc i)]]]
-                   :global [[:ld :hl [i]]]))
-               (throw (Exception. "Uknown variable " id))))
-      :num [[:ld :hl (Integer. id)]])))
+  (match arg
+         [:id id]
+         (load-arg-id env id) 
+
+         [:num n]
+         (load-arg-num n)
+
+         [:arg-mul i j]
+         (load-arg-mul env i j)
+
+         [:arg-div i j]
+         (load-arg-div env i j)
+
+         [:arg-add i j]
+         (load-arg-add env i j)
+
+         [:arg-sub i j]
+         (load-arg-sub env i j)))
 
 (defn- store-arg
   [env arg]
@@ -239,26 +313,9 @@
   [env]
   [[:ret]])
 
-(defn assign-val
+(defn assign
   [env id n]
   [(load-arg env n)
-   (store-arg env id)])
-
-(defn assign-add
-  [env id arg1 arg2]
-  [(load-arg env arg2)
-   [:ex :de :hl]
-   (load-arg env arg1)
-   [:add :hl :de]
-   (store-arg env id)])
-
-(defn assign-sub
-  [env id arg1 arg2]
-  [(load-arg env arg2)
-   [:ex :de :hl]
-   (load-arg env arg1)
-   [:or :a]
-   [:sbc :hl :de]
    (store-arg env id)])
 
 (defn call

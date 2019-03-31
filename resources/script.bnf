@@ -15,7 +15,14 @@ global = <'global'> <ws> id
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
 <op> = <ws>? (load|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print|sprite-delete) <nl-comment>+
 
-<arg> = (id|num)
+<arg> = add-sub
+<add-sub> = mul-div | arg-add | arg-sub
+arg-add = add-sub <ws>? <'+'> <ws>? mul-div
+arg-sub = add-sub <ws>? <'-'> <ws>? mul-div
+<mul-div> = term | arg-mul | arg-div
+arg-mul = mul-div <ws>? <'*'> <ws>? term
+arg-div = mul-div <ws>? <'/'> <ws>? term
+<term> = id | num | <'('> <ws>? add-sub <ws>? <')'>
 
 <new-ops> = <'new'> <ws> (new-sprite)
 new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
@@ -39,10 +46,7 @@ load = <'load'> <ws> ('image'|'title'|'animation'|'music'|'sfx'|'tilemap'|'scree
 music-stop = <'music'> <ws> <'stop'> 
 sfx-play = <'sfx'> <ws> <'play'> <ws> arg
 
-<assign> = (assign-val|assign-add|assign-sub)
-assign-val = id <ws>? <'='> <ws>? arg
-assign-add = id <ws>? <'='> <ws>? arg <ws>? <'+'> <ws>? arg
-assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
+assign = id <ws>? <'='> <ws>? arg
 
 <scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
 scroll-right = <'right'>

@@ -9,7 +9,14 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
-<arg> = (id|num)
+<arg> = add-sub
+<add-sub> = mul-div | arg-add | arg-sub
+arg-add = add-sub <ws>? <'+'> <ws>? mul-div
+arg-sub = add-sub <ws>? <'-'> <ws>? mul-div
+<mul-div> = term | arg-mul | arg-div
+arg-mul = mul-div <ws>? <'*'> <ws>? term
+arg-div = mul-div <ws>? <'/'> <ws>? term
+<term> = id | num | <'('> <ws>? add-sub <ws>? <')'>
 
 <op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-delete|music-stop|sfx-play|scroll|set-tile|print|assign)
 
@@ -24,10 +31,7 @@ new-sprite = <'sprite'> <comma> str <ws>? [<','> <ws>? arg]*
 
 sprite-delete = <'delete'>
 
-<assign> = (assign-val|assign-add|assign-sub)
-assign-val = id <ws>? <'='> <ws>? arg
-assign-add = id <ws>? <'='> <ws>? arg <ws>? <'+'> <ws>? arg
-assign-sub = id <ws>? <'='> <ws>? arg <ws>? <'-'> <ws>? arg
+assign = id <ws>? <'='> <ws>? arg
 
 <scroll> = <'scroll'> <ws> (scroll-right|scroll-left)
 scroll-right = <'right'>

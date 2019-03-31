@@ -29,9 +29,9 @@ sub update
 endsub
 
 sub random_y
-    x = 2040
+    x = 255*8
     y = rnd
-    if y > 1152 then
+    if y > 144*8 then
        call random_y
     endif
 endsub

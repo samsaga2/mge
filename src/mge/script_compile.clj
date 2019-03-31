@@ -67,14 +67,8 @@
          [:return]
          [(ir/return env)]
 
-         [:assign-val id arg]
-         [(ir/assign-val env id arg)]
-
-         [:assign-add id arg1 arg2]
-         [(ir/assign-add env id arg1 arg2)]
-
-         [:assign-sub id arg1 arg2]
-         [(ir/assign-sub env id arg1 arg2)]
+         [:assign id arg]
+         [(ir/assign env id arg)]
 
          [:call [:id s] & args]
          [(ir/call env

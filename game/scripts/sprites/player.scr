@@ -9,8 +9,8 @@ sub init
     type = 1
     width = 6
     height = 7
-    x = 800
-    y = 800
+    x = 100*8
+    y = 100*8
 
     state = 0
     is_dead = 0
@@ -31,7 +31,7 @@ sub update
         endif
     endif
     if keydown "right" then
-        if x < 1912 then
+        if x < 239*8 then
             x = x + 8
             next_state = 1
         endif
@@ -43,7 +43,7 @@ sub update
         endif
     endif
     if keydown "down" then
-        if y < 1400 then
+        if y < 175*8 then
             y = y + 8
             next_state = 1
         endif

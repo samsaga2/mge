@@ -8,12 +8,12 @@ sub init
     height = 2
     x = arg0
     y = arg1
-    x = x + 48
+    x = x + 6*8
     sfx play 0
 endsub
 
 sub update
-    if x >= 2016 then
+    if x >= 252*8 then
         call kill_bullet
         return
     endif
