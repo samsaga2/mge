@@ -71,7 +71,7 @@
   (label :loop [:jr :loop]))
 
 (defn- build-and-run
-  [{:keys [sym name run-openmsx asm-code]}]
+  [{:keys [sym name run-openmsx asm-code] :or {name "game"}}]
   (let [rom-file (str name ".rom")
         sym-file (str name ".sym")
         asm-file (when asm-code (str name ".asm"))]
