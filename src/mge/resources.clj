@@ -4,7 +4,8 @@
             [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
             [mge.resources-tilemaps :refer [make-tilemap]]
-            [mge.script-compile :as sc][mge.resources-id :refer :all]
+            [mge.script-compile :as sc]
+            [mge.resources-id :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.pprint :as pp])

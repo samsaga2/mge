@@ -5,6 +5,7 @@
             [mge.resources-id :refer :all]
             [mge.script-gencode :as gc]
             [mge.script :as s]
+            [mge.script-peephole :as ph]
             [clojure.string :as str]
             [mge.sprites :as spr]
             [clj-z80.asm :refer [make-var]]))
@@ -148,14 +149,15 @@
 
 (defn- compile-ops
   [env ops]
-  (doall (mapcat (partial compile-op env) ops)))
+   (doall (mapcat (partial compile-op env) ops)))
 
 (defn- compile-sub
   [env id ops]
-  [(keyword id)
-   (doall
-    (concat (compile-ops (:env @env) ops)
-            (gc/end env)))])
+  (let [asm-code (->> (concat (compile-ops (:env @env) ops)
+                              (gc/end env))
+                      ph/optimize
+                      (into []))]
+    [(keyword id) asm-code]))
 
 (defn- compile-property
   [env id]
@@ -214,8 +216,8 @@
            [:prog & ops]
            (->> (concat (compile-ops env ops)
                         (gc/animation-end env))
-                vec
-                doall))))
+                ph/optimize
+                (into [])))))
 
 
 ;; core

@@ -153,16 +153,18 @@
 (defn- compare-code
   [env i j cmp skip-label]
   (concat (if (= cmp "<=")
-            [(load-arg env j)
-             [:push :hl]
+            (concat
+             (load-arg env j)
+             [[:push :hl]
              (load-arg env i)
              [:ex :de :hl]
-             [:pop :hl]]
-            [(load-arg env i)
-             [:push :hl]
-             (load-arg env j)
-             [:ex :de :hl]
              [:pop :hl]])
+            (concat
+             (load-arg env i)
+             [[:push :hl]]
+             (load-arg env j)
+             [[:ex :de :hl]
+              [:pop :hl]]))
           [[:call bios/DCOMPR]]
           (case cmp
             "="  [[:jp :nz skip-label]]
@@ -196,10 +198,11 @@
   (when (> (count args) (count s/args))
     (throw (Exception. "Too many args for new sprite")))
   (mapcat (fn [argvar arg]
-            [[:ld :hl [argvar]]
-             [:push :hl]
+            (concat
+             [[:ld :hl [argvar]]
+              [:push :hl]]
              (load-arg env arg)
-             [:ld [argvar] :hl]])
+             [[:ld [argvar] :hl]]))
           s/args
           args))
 
@@ -276,29 +279,31 @@
 (defn if-collide
   [env type then else]
   (gen-if (fn [l]
-            [(load-arg env type)
-             [:ld :a :l]
-             [:call spr/collide]
-             [:jp :z l]])
+            (concat
+             (load-arg env type)
+             [[:ld :a :l]
+              [:call spr/collide]
+              [:jp :z l]]))
           then else))
 
 (defn if-tile
   [env offset-x offset-y type then else]
   (gen-if (fn [l]
-            [(load-arg env offset-x)
-             [:ld :a :l]
-             [:ld :b :a]
+            (concat
+             (load-arg env offset-x)
+             [[:ld :a :l]
+              [:ld :b :a]]
              (load-arg env offset-y)
-             [:ld :a :l]
-             [:ld :c :a]
-             [:call spr/get-tile]
-             [:ld :b :a]
+             [[:ld :a :l]
+              [:ld :c :a]
+              [:call spr/get-tile]
+              [:ld :b :a]]
 
              (load-arg env type)
-             [:ld :a :l]
+             [[:ld :a :l]
 
-             [:cp :b]
-             [:jp :nz l]])
+              [:cp :b]
+              [:jp :nz l]]))
           then else))
 
 (defn load-title
@@ -315,8 +320,9 @@
 
 (defn assign
   [env id n]
-  [(load-arg env n)
-   (store-arg env id)])
+  (concat
+   (load-arg env n)
+   (store-arg env id)))
 
 (defn call
   [env func args]
@@ -361,10 +367,11 @@
 
 (defn sfx-play
   [env n]
-  [(load-arg env n)
-   [:ld :a :l]
-   [:ld :c 0]
-   [:call music/play-sfx]])
+  (concat
+   (load-arg env n)
+   [[:ld :a :l]
+    [:ld :c 0]
+    [:call music/play-sfx]]))
 
 (defn tilemap-load
   [env patterns-id colors-id attrs-id lines-id map-id types-id]
@@ -408,49 +415,53 @@
 
 (defn set-tile
   [env x y n]
-  [(load-arg env n)
-   [:ld :a :l]
-   [:ld :c :a]
+  (concat
+   (load-arg env n)
+   [[:ld :a :l]
+    [:ld :c :a]]
    (load-arg env y)
-   [:ld :a :l]
-   [:ld :b :a]
+   [[:ld :a :l]
+    [:ld :b :a]]
    (load-arg env x)
-   [:ld :a :l]
-   [:call off/set-tile]])
+   [[:ld :a :l]
+    [:call off/set-tile]]))
 
 (defn write-str
   [env x y str]
   (let [str-label  (keyword (gensym))
         next-label (keyword (gensym))]
-    [[:ld :de str-label]
+    (concat
+     [[:ld :de str-label]]
      (load-arg env y)
-     [:ld :a :l]
-     [:ld :b :a]
+     [[:ld :a :l]
+      [:ld :b :a]]
      (load-arg env x)
-     [:ld :a :l]
-     [:call off/write-str]
-     [:jr next-label]
-     (label str-label (db str) (db 0))
-     (label next-label)]))
+     [[:ld :a :l]
+      [:call off/write-str]
+      [:jr next-label]
+      (label str-label (db str) (db 0))
+      (label next-label)])))
 
 (defn write-num
   [env x y arg]
-  [(load-arg env arg)
-   [:ex :de :hl]
+  (concat
+   (load-arg env arg)
+   [[:ex :de :hl]]
    (load-arg env y)
-   [:ld :a :l]
-   [:ld :b :a]
+   [[:ld :a :l]
+    [:ld :b :a]]
    (load-arg env x)
-   [:ld :a :l]
-   [:call off/write-num]])
+   [[:ld :a :l]
+    [:call off/write-num]]))
 
 (defn write-znum
   [env x y arg]
-  [(load-arg env arg)
-   [:ex :de :hl]
+  (concat
+   (load-arg env arg)
+   [[:ex :de :hl]]
    (load-arg env y)
-   [:ld :a :l]
-   [:ld :b :a]
+   [[:ld :a :l]
+    [:ld :b :a]]
    (load-arg env x)
-   [:ld :a :l]
-   [:call off/write-znum]])
+   [[:ld :a :l]
+    [:call off/write-znum]]))
