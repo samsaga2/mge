@@ -5,6 +5,13 @@
   [asm]
   (match (into [] asm)
 
+         [[:push :hl]
+          [:ld :de n]
+          [:pop :hl]
+          & tl]
+         (concat [[:ld :de n]]
+                 (optimize-pass tl))
+
          [[:ld :hl n1]
           [:push :hl]
           [:ld :hl n2]
@@ -47,6 +54,39 @@
          (concat [[:ld :de n]]
                  (optimize-pass tl))
 
+         [[:call f]
+          [:ret]
+          & tl]
+         (concat [[:jp f]]
+                 (optimize-pass tl))
+
+         [[:push :hl]
+          [:ld :l n1]
+          [:ld :h n2]
+          [:pop :de]
+          & tl]
+         (concat [[:ex :de :hl]
+                  [:ld :l n1]
+                  [:ld :h n2]]
+                 (optimize-pass tl))
+
+         [[:ld :de 1]
+          [:ld :hl n]
+          [:or :a]
+          [:sbc :hl :de]
+          & tl]
+         (concat [[:ld :hl n]
+                  [:dec :hl]]
+                 (optimize-pass tl))
+
+         [[:ld :de 1]
+          [:ld :hl n]
+          [:add :hl :de]
+          & tl]
+         (concat [[:ld :hl n]
+                  [:inc :hl]]
+                 (optimize-pass tl))
+
          ;; finish peephole
          []
          []
@@ -61,7 +101,7 @@
   (loop [asm   asm
          count 0]
     (let [new-asm (optimize-pass asm)]
-      (if (or (not= new-asm asm)
+      (if (or (= new-asm asm)
               (= count 100))
         new-asm
         (recur new-asm (inc count))))))
