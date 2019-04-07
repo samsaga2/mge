@@ -57,6 +57,7 @@
         (case (:type v)
           :local [[:ld :l [:ix i]]
                   [:ld :h [:ix (inc i)]]]
+          :const [[:ld :hl (:value v)]]
           :global [[:ld :hl [i]]]))
       (throw (Exception. "Uknown variable " id))))) 
 

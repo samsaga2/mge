@@ -149,7 +149,7 @@
 
 (defn- compile-ops
   [env ops]
-   (doall (mapcat (partial compile-op env) ops)))
+  (doall (mapcat (partial compile-op env) ops)))
 
 (defn- compile-sub
   [env id ops]
@@ -159,8 +159,20 @@
                       (into []))]
     [(keyword id) asm-code]))
 
+(defn- compile-const
+  [env id value]
+  (when (get env id)
+    (throw (Exception. (str "Variable `" id "' already exists"))))
+  (swap! env assoc
+         :env (assoc (:env @env)
+                     id {:type :const
+                         :value value}))
+  nil)
+
 (defn- compile-property
   [env id]
+  (when (get env id)
+    (throw (Exception. (str "Property `" id "' already exists"))))
   (let [local-index (inc (:local-index @env))]
     (when (== local-index 16)
       (throw (Exception. "Too many properties")))
@@ -189,6 +201,9 @@
   (match sub
          [:sub [:id id] & ops]
          (compile-sub env id ops)
+
+         [:const [:id id] [:num num]]
+         (compile-const env id (Integer. num))
 
          [:property [:id id]]
          (compile-property env id)

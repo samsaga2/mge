@@ -70,7 +70,7 @@
   [:call install-hook]
   (label :loop [:jr :loop]))
 
-(defn- build-and-run
+(defn- build
   [{:keys [sym name run-openmsx asm-code] :or {name "game"}}]
   (let [rom-file (str name ".rom")
         sym-file (str name ".sym")
@@ -94,5 +94,5 @@
 (defn -main
   [& args]
   (let [args (parse-opts args mge-options)]
-    (build-and-run (:options args)))
+    (build (:options args)))
   (System/exit 0))

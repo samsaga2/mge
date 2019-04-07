@@ -1,23 +1,27 @@
 global score
-property state ' 0-normal 1-explosion
+
+const state_normal = 0
+const state_explosion = 1
+
+property state
 
 sub init
     load image, "missile.png"
     type = 2
     call random_y
     x = arg0
-    state = 0
+    state = state_normal
 endsub
 
 sub update
-    if state = 1 then
+    if state = state_explosion then
        return
     endif
 
     if collide 3 then
        score = score + 1
        zprint 7, 23, score
-       state = 1
+       state = state_explosion
        load animation, "missile_explosion.scr"
        return
     endif

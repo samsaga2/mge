@@ -1,4 +1,4 @@
-prog = (<nl-comment>|<ws>)? (global|property|sub) (<nl-comment> (global|property|sub))* (<nl-comment>|<ws>)?
+prog = (<nl-comment>|<ws>)? (global|property|const|sub) (<nl-comment> (global|property|const|sub))* (<nl-comment>|<ws>)?
 
 nl = #'[\s\n\r]+'
 comment = #'\s*\'[^\n\r]*[\n\r]+'
@@ -9,6 +9,7 @@ num = #'-?[0-9]+'
 str = <'"'> #'[^"]*' <'"'>
 comma = <ws>? <','> <ws>? 
 
+const = <'const'> <ws> id <ws>? <'='> <ws>? num
 property = <'property'> <ws> id
 global = <'global'> <ws> id
 
