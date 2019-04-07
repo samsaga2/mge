@@ -14,7 +14,7 @@ property = <'property'> <ws> id
 global = <'global'> <ws> id
 
 sub = <'sub'> <ws> id <nl-comment> op* <'endsub'>
-<op> = <ws>? (load|if-ops|new-ops|return|assign|call|music-stop|sfx-play|scroll|set-tile|print|sprite-delete) <nl-comment>+
+<op> = <ws>? (play-str|play-num|load|if-ops|new-ops|return|assign|call|music-stop|scroll|set-tile|print|sprite-delete) <nl-comment>+
 
 <arg> = add-sub
 <add-sub> = mul-div | arg-add | arg-sub
@@ -43,9 +43,10 @@ if-tile = <'tile'> <ws> arg <comma> arg <ws>? <'='> <ws>? arg
 
 return = <'return'>
 call = <'call'> <ws> id <ws>? [<','> <ws>? arg]*
-load = <'load'> <ws> ('image'|'title'|'animation'|'music'|'sfx'|'tilemap'|'screen') <comma> str
-music-stop = <'music'> <ws> <'stop'> 
-sfx-play = <'sfx'> <ws> <'play'> <ws> arg
+load = <'load'> <ws> ('sprite'|'title'|'sfx'|'tilemap'|'screen') <ws>? <comma> str
+play-str = <'play'> <ws> ('music'|'animation') <ws>? <comma> str
+play-num = <'play'> <ws> ('sfx') <ws>? <comma> arg
+music-stop = <'stop'> <ws> <'music'> 
 
 assign = id <ws>? <'='> <ws>? arg
 

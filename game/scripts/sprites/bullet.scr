@@ -2,14 +2,14 @@ global nbullets
 
 sub init
     nbullets = nbullets + 1
-    load image, "bullet.png"
+    load sprite, "bullet.png"
     type = 3
     width = 2
     height = 2
     x = arg0
     y = arg1
     x = x + 6*8
-    sfx play 0
+    play sfx, 0
 endsub
 
 sub update

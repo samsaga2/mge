@@ -341,7 +341,7 @@
   [env]
   [[:call spr/animation-next-frame]])
 
-(defn animation-load
+(defn animation-play
   [env res-id]
   [[:ld :hl res-id]
    [:ld [:ix spr/+spr-anim+] :l]
@@ -350,14 +350,14 @@
    [:ld [:ix (inc spr/+spr-anim-page+)] :a]
    [:ret]])
 
-(defn music-load
+(defn music-play
   [env res-id]
   [[:ld :hl res-id]
    [:ld :a (fn [] (:page (get-label res-id)))]
    [:call music/play-music]])
 
 (defn music-stop
-  [env res-id]
+  [env]
   [[:call music/stop-music]])
 
 (defn sfx-load

@@ -1,29 +1,29 @@
-load image, "player1.png"
+load sprite, "player1.png"
 next frame
 next frame
 next frame
 next frame
 next frame
 next frame
-load image, "player2.png"
+load sprite, "player2.png"
 next frame
 next frame
 next frame
 next frame
 next frame
 next frame
-load image, "player3.png"
+load sprite, "player3.png"
 next frame
 next frame
 next frame
 next frame
 next frame
 next frame
-load image, "player4.png"
+load sprite, "player4.png"
 next frame
 next frame
 next frame
 next frame
 next frame
 next frame
-load animation, "player_right.scr"
+play animation, "player_right.scr"

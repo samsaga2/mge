@@ -6,7 +6,7 @@ const state_explosion = 1
 property state
 
 sub init
-    load image, "missile.png"
+    load sprite, "missile.png"
     type = 2
     call random_y
     x = arg0
@@ -22,7 +22,7 @@ sub update
        score = score + 1
        zprint 7, 23, score
        state = state_explosion
-       load animation, "missile_explosion.scr"
+       play animation, "missile_explosion.scr"
        return
     endif
 

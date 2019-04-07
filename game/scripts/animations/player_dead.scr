@@ -1,24 +1,24 @@
-load image, "expl1.png"
+load sprite, "expl1.png"
 next frame
 next frame
 next frame
 next frame
-load image, "expl2.png"
+load sprite, "expl2.png"
 next frame
 next frame
 next frame
 next frame
-load image, "expl3.png"
+load sprite, "expl3.png"
 next frame
 next frame
 next frame
 next frame
-load image, "expl4.png"
+load sprite, "expl4.png"
 next frame
 next frame
 next frame
 next frame
-load image, "expl5.png"
+load sprite, "expl5.png"
 next frame
 next frame
 next frame

@@ -18,12 +18,14 @@ arg-mul = mul-div <ws>? <'*'> <ws>? term
 arg-div = mul-div <ws>? <'/'> <ws>? term
 <term> = id | num | <'('> <ws>? add-sub <ws>? <')'>
 
-<op> = <ws>? (anim-load|load|next-frame|new-ops|sprite-delete|music-stop|sfx-play|scroll|set-tile|print|assign)
+<op> = <ws>? (anim-play|play-str|play-num|load|next-frame|new-ops|sprite-delete|music-stop|sfx-play|scroll|set-tile|print|assign)
 
-anim-load = <'load'> <ws> 'animation' <comma> str
-load = <'load'> <ws> ('image'|'title'|'music'|'sfx'|'screen') <comma> str
+anim-play = <'play'> <ws> <'animation'> <ws>? <comma> str
+load = <'load'> <ws> ('sprite'|'title'|'sfx'|'screen') <ws>? <comma> str
+play-str = <'play'> <ws> ('music') <ws>? <comma> str
+play-num = <'play'> <ws> ('sfx') <ws>? <comma> arg
 next-frame = <'next'> <ws> <'frame'>
-music-stop = <'music'> <ws> <'stop'> 
+music-stop = <'stop'> <ws> <'music'> 
 sfx-play = <'sfx'> <ws> <'play'> <ws> arg
 
 <new-ops> = <'new'> <ws> (new-sprite)

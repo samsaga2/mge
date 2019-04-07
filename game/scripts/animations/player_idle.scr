@@ -1,1 +1,1 @@
-load image, "player1.png"
+load sprite, "player1.png"

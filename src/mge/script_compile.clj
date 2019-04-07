@@ -34,31 +34,49 @@
 (defn- compile-load-ops
   [env op]
   (match op
-         [:load type [:str s]]
-         (case type
-           "image"     [(gc/sprite-image env
-                                         (make-sprite-id s)
-                                         (make-sprite-color1-id s)
-                                         (make-sprite-color2-id s))]
-           "title"     [(gc/load-title env
-                                       (make-title-pattern-id s)
-                                       (make-title-color-id s))]
-           "animation" [(gc/sprite-animation env (make-animation-script-id s :update))]
-           "music"     [(gc/music-load env (make-music-id s))]
-           "sfx"       [(gc/sfx-load env (make-sfx-id s))]
-           "tilemap"   [(gc/tilemap-load env
-                                         (make-tilemap-id s :pattern)
-                                         (make-tilemap-id s :colors)
-                                         (make-tilemap-id s :attr)
-                                         (make-tilemap-id s :lines)
-                                         (make-tilemap-id s :map)
-                                         (make-tilemap-id s :types))]
-           "screen" [(gc/screen-load env
-                                     (make-screen-script-id s :init)
-                                     (make-screen-script-id s :update))])
+         [:load "sprite" [:str s]]
+         [(gc/sprite-image env
+                           (make-sprite-id s)
+                           (make-sprite-color1-id s)
+                           (make-sprite-color2-id s))]
 
-         [:anim-load "animation" [:str s]]
-         [(gc/animation-load env (make-animation-script-id s :update))]
+         [:load "title" [:str s]]
+         [(gc/load-title env
+                         (make-title-pattern-id s)
+                         (make-title-color-id s))]
+         [:load "sfx" [:str s]]
+         [(gc/sfx-load env (make-sfx-id s))]
+
+         [:load "tilemap" [:str s]]
+         [(gc/tilemap-load env
+                           (make-tilemap-id s :pattern)
+                           (make-tilemap-id s :colors)
+                           (make-tilemap-id s :attr)
+                           (make-tilemap-id s :lines)
+                           (make-tilemap-id s :map)
+                           (make-tilemap-id s :types))]
+
+         [:load "screen" [:str s]]
+         [(gc/screen-load env
+                          (make-screen-script-id s :init)
+                          (make-screen-script-id s :update))]
+
+         :else nil))
+
+(defn- compile-play-ops
+  [env op]
+  (match op
+         [:play-str "animation" [:str s]]
+         [(gc/sprite-animation env (make-animation-script-id s :update))]
+
+         [:play-str "music" [:str s]]
+         [(gc/music-play env (make-music-id s))]
+
+         [:play-num "sfx" arg]
+         [(gc/sfx-play env arg)]
+
+         [:anim-play [:str s]]
+         [(gc/animation-play env (make-animation-script-id s :update))]
 
          :else nil))
 
@@ -82,9 +100,6 @@
 
          [:music-stop]
          [(gc/music-stop env)]
-
-         [:sfx-play arg]
-         [(gc/sfx-play env arg)]
 
          [:scroll-left]
          [(gc/scroll-left env)]
@@ -143,6 +158,7 @@
   (doall
    (apply concat (or (compile-sprite-ops env op)
                      (compile-load-ops env op)
+                     (compile-play-ops env op)
                      (compile-misc-ops env op)
                      (compile-if-ops env op)
                      (throw (Exception. (str "Uknown func " op)))))))
