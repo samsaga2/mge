@@ -14,13 +14,14 @@
 
 (def script-pages [0 1 2])
 (def res-pages (vec (range 4 64)))
+(def ^:dynamic game-folder "game")
 
 
 ;; files
 
 (defn- list-files
   [path extension]
-  (->> (io/file "game" path)
+  (->> (io/file game-folder path)
        file-seq
        (filter #(.isFile %))
        (filter #(str/ends-with? (str/lower-case %) extension))
@@ -215,17 +216,18 @@
 ;; core
 
 (defn compile-resources
-  [asm-file]
+  [asm-file current-game-folder]
   ;; truncate asm file
   (when asm-file
     (spit asm-file ""))
-  ;; compile misc resources
-  (make-sprites)
-  (make-titles)
-  (make-music)
-  (make-sfx)
-  (make-tilemaps)
-  ;; compile code resource
-  (make-scripts (compile-screen-scripts) asm-file)
-  (make-scripts (compile-sprite-scripts) asm-file)
-  (make-scripts (compile-animation-scripts) asm-file))
+  (binding [game-folder current-game-folder]
+    ;; compile misc resources
+    (make-sprites)
+    (make-titles)
+    (make-music)
+    (make-sfx)
+    (make-tilemaps)
+    ;; compile code resource
+    (make-scripts (compile-screen-scripts) asm-file)
+    (make-scripts (compile-sprite-scripts) asm-file)
+    (make-scripts (compile-animation-scripts) asm-file)))
