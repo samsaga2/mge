@@ -1,0 +1,84 @@
+const state_idle = 0
+const state_walk_right = 1
+const state_walk_left = 2
+
+property state
+property speed_x
+
+sub init
+    play animation, "player_idle_right.scr"
+
+    state = state_idle
+    type = 1
+    x = 100*8
+	y = 100*8
+	speed_x = 0
+endsub
+
+sub update
+    call update_keys
+	call update_anim
+	call update_move
+endsub
+
+sub update_keys
+    ' inc speed to the left
+    if keydown "right" then
+		if speed_x < 16 then
+		     speed_x = speed_x + 1
+		endif
+		return
+	endif
+
+    ' inc speed to the right
+    if keydown "left" then
+		if speed_x > -16 then
+		     speed_x = speed_x - 1
+		endif
+		return
+	endif
+
+    ' slow down speed
+    if speed_x > 0 then
+	    speed_x = speed_x - 1
+		return
+    endif
+	if speed_x < 0 then
+		speed_x = speed_x + 1
+	endif
+endsub
+
+sub update_anim
+    if speed_x = 0 then
+	    if state = state_walk_right then
+		    play animation, "player_idle_right.scr"
+		    state = state_idle
+		else
+	        if state = state_walk_left then
+				play animation, "player_idle_left.scr"
+				state = state_idle
+		    endif
+		endif
+	    return
+	endif
+
+    if speed_x > 0 then
+	    if state = state_idle then
+		    play animation, "player_walk_right.scr"
+		    state = state_walk_right
+		endif
+		return
+	endif
+
+    if speed_x < 0 then
+	    if state = state_idle then
+		    play animation, "player_walk_left.scr"
+		    state = state_walk_left
+		endif
+		return
+	endif
+endsub
+
+sub update_move
+    x = x + speed_x
+endsub

@@ -1,0 +1,17 @@
+load sprite, "player_left_0.png"
+next frame
+next frame
+next frame
+load sprite, "player_left_1.png"
+next frame
+next frame
+next frame
+load sprite, "player_left_0.png"
+next frame
+next frame
+next frame
+load sprite, "player_left_2.png"
+next frame
+next frame
+next frame
+play animation, "player_walk_left.scr"

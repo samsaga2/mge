@@ -1,0 +1,6 @@
+sub init
+    new sprite, "player.scr"
+endsub
+
+sub update
+endsub
