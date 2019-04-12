@@ -5,7 +5,6 @@
             [clj-z80.msx.lib.bios :as bios]
             [clojure.string :as str]
             [clojure.core.match :refer [match]]
-
             [mge.sprites :as spr]
             [mge.keys :as keys]
             [mge.title :as title]
@@ -153,28 +152,31 @@
 
 (defn- compare-code
   [env i j cmp skip-label]
-  (concat (if (= cmp "<=")
-            (concat
-             (load-arg env j)
-             [[:push :hl]
-             (load-arg env i)
-             [:ex :de :hl]
-             [:pop :hl]])
-            (concat
-             (load-arg env i)
-             [[:push :hl]]
-             (load-arg env j)
-             [[:ex :de :hl]
-              [:pop :hl]]))
-          [[:call bios/DCOMPR]]
-          (case cmp
-            "="  [[:jp :nz skip-label]]
-            "<>" [[:jp :z skip-label]]
-            ">"  [[:jp :z skip-label]
-                  [:jp :c skip-label]]
-            ">=" [[:jp :c skip-label]]
-            "<"  [[:jp :nc skip-label]]
-            "<=" [[:jp :c skip-label]])))
+  (concat 
+   (load-arg env i)
+   [[:push :hl]]
+   (load-arg env j)
+   [[:ex :de :hl]
+    [:pop :hl]]
+   (case cmp
+     "="  [[:rst bios/DCOMPR]
+           [:jp :nz skip-label]]
+     "<>" [[:rst bios/DCOMPR]
+           [:jp :z skip-label]]
+     ">=" [[:call u/signed-dcompr]
+           [:jp :c skip-label]]
+     "<"  [[:call u/signed-dcompr]
+           [:jp :nc skip-label]]
+     ">" [[:rst bios/DCOMPR]
+          [:jp :z skip-label]
+          [:call u/signed-dcompr]
+          [:jp :c skip-label]]
+     "<=" (let [no-skip-label (keyword (gensym))]
+            [[:rst bios/DCOMPR]
+             [:jp :z no-skip-label]
+             [:rst bios/DCOMPR]
+             [:jp :nc skip-label]
+             (label no-skip-label)]))))
 
 (defn- gen-if
   [condfn then else]

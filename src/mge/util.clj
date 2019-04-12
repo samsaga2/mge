@@ -27,3 +27,14 @@
   [:ld [rand-seed] :hl]
   [:pop :bc]
   [:ret])
+
+(defasmproc signed-dcompr {:page :code}
+  ;; http://karoshi.auic.es/index.php?topic=2316.0;wap2
+  [[:ld :a :h]
+   [:xor 0x80]
+   [:ld :h :a]
+   [:ld :a :d]
+   [:xor 0x80]
+   [:ld :d :a]
+   [:sbc :hl :de]
+   [:ret]])
