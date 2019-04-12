@@ -29,7 +29,7 @@
 
 (defn list-sprites-files
   []
-  (list-files "re/sprites" ".png"))
+  (list-files "res/sprites" ".png"))
 
 (defn list-screen-scripts-files
   []
