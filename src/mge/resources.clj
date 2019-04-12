@@ -33,15 +33,15 @@
 
 (defn list-screen-scripts-files
   []
-  (list-files "scripts/screens" ".scr"))
+  (list-files "scripts/screens" ".mge"))
 
 (defn list-sprite-scripts-files
   []
-  (list-files "scripts/sprites" ".scr"))
+  (list-files "scripts/sprites" ".mge"))
 
 (defn list-animation-scripts-files
   []
-  (list-files "scripts/animations" ".scr"))
+  (list-files "scripts/animations" ".mge"))
 
 (defn list-title-files
   []
