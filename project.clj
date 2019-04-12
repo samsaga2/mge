@@ -7,7 +7,8 @@
                  [clj-z80/clj-z80 "0.1.0-SNAPSHOT"]
                  [instaparse "1.4.9"]
                  [org.clojure/core.match "0.3.0-alpha5"]
-                 [org.clojure/tools.cli "0.4.2"]]
+                 [org.clojure/tools.cli "0.4.2"]
+                 [net.mikera/imagez "0.12.0"]]
   :jvm-opts []
   :main mge.core
   :aot [mge.core])

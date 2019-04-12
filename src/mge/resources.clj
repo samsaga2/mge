@@ -1,8 +1,8 @@
 (ns mge.resources
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.image :refer [set-label!]]
-            [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
+            [mge.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [mge.resources-tilemaps :refer [make-tilemap]]
             [mge.script-compile :as sc]
             [mge.resources-id :refer :all]
