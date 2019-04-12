@@ -1,10 +1,10 @@
 (ns mge.engine-screens
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.image :refer [set-konami5-page]]
-            [mge.offscreen :as off]
-            [mge.sprites :as spr]
-            [mge.keys :as keys]
-            [mge.util :as u]))
+            [mge.engine-offscreen :as off]
+            [mge.engine-sprites :as spr]
+            [mge.engine-keys :as keys]
+            [mge.engine-util :as u]))
 
 
 (defasmword update-fn)

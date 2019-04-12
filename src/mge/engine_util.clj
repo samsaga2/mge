@@ -29,7 +29,7 @@
   [:ret])
 
 (defasmproc signed-dcompr {:page :code}
-  ;; http://karoshi.auic.es/index.php?topic=2316.0
+  ;; http://karoshi.auic.es/index.php?topic=2316.0;wap2
   [[:ld :a :h]
    [:xor 0x80]
    [:ld :h :a]

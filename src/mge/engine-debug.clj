@@ -1,4 +1,4 @@
-(ns mge.debug
+(ns mge.engine-debug
   (:require [clj-z80.asm :refer :all :refer-macros :all]))
 
 (defasmproc print-a {:page :code}

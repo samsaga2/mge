@@ -4,8 +4,8 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.shell :refer [sh]]
             [mge.resources :refer [compile-resources]]
-            mge.engine
-            mge.image))
+            mge.engine-core
+            mge.engine-image))
 
 (defn- build
   [{:keys [chdir sym name run-openmsx asm-code]

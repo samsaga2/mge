@@ -2,7 +2,6 @@
   (:require [clojure.xml :as xml]
             [clojure.java.io :as io]
             [clj-z80.image :refer [get-label]]
-
             [clj-z80.msx.util.graphics :refer [convert-screen2 convert-sprite-16x16]]
             [clj-z80.msx.util.compress :refer [compress-lz77]]
             [mge.resources-id :refer :all]

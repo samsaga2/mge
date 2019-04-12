@@ -5,16 +5,16 @@
             [clj-z80.msx.lib.bios :as bios]
             [clojure.string :as str]
             [clojure.core.match :refer [match]]
-            [mge.sprites :as spr]
-            [mge.keys :as keys]
-            [mge.title :as title]
-            [mge.script :as s]
-            [mge.util :as u]
-            [mge.math :as m]
-            [mge.music :as music]
-            [mge.tilemap :as tilemap]
-            [mge.screens :as scr]
-            [mge.offscreen :as off]))
+            [mge.engine-sprites :as spr]
+            [mge.engine-keys :as keys]
+            [mge.engine-title :as title]
+            [mge.engine-script :as s]
+            [mge.engine-util :as u]
+            [mge.engine-math :as m]
+            [mge.engine-music :as music]
+            [mge.engine-tilemap :as tilemap]
+            [mge.engine-screens :as scr]
+            [mge.engine-offscreen :as off]))
 
 
 ;; env

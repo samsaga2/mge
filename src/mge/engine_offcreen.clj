@@ -1,7 +1,7 @@
-(ns mge.offscreen
+(ns mge.engine-offscreen
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
-            [mge.math :as m]))
+            [mge.engine-math :as m]))
 
 
 (defasmvar offscreen (* 32 24))

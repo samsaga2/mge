@@ -4,10 +4,10 @@
             [instaparse.core :as insta]
             [mge.resources-id :refer :all]
             [mge.script-gencode :as gc]
-            [mge.script :as s]
+            [mge.engine-script :as s]
             [mge.script-peephole :as ph]
             [clojure.string :as str]
-            [mge.sprites :as spr]
+            [mge.engine-sprites :as spr]
             [clj-z80.asm :refer [make-var]]))
 
 

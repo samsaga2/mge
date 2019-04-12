@@ -1,4 +1,4 @@
-(ns mge.vdp
+(ns mge.engine-vdp
   (:require [clj-z80.asm :refer :all :refer-macros :all]))
 
 (defasmproc set-write-addr {:page :code}

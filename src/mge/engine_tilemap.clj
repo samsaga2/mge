@@ -4,9 +4,9 @@
             [clj-z80.msx.lib.sysvars :as sysvars]
             [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
             [clj-z80.msx.image :refer [set-konami5-page]]
-            [mge.offscreen :as off]
-            [mge.math :as math]
-            [mge.vdp :as vdp]))
+            [mge.engine-offscreen :as off]
+            [mge.engine-math :as math]
+            [mge.engine-vdp :as vdp]))
 
 
 (defasmword tilemap-width)

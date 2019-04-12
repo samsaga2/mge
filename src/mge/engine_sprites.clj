@@ -5,9 +5,9 @@
             [clj-z80.msx.lib.sprites :as spr]
             [clj-z80.image :refer [get-label]]
             [clj-z80.msx.lib.sysvars :as sysvars]
-            [mge.util :as u]
-            [mge.math :as m]
-            [mge.tilemap :as tilemap]))
+            [mge.engine-util :as u]
+            [mge.engine-math :as m]
+            [mge.engine-tilemap :as tilemap]))
 
 
 ;; sprite struct

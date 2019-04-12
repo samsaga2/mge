@@ -4,7 +4,7 @@
             [clj-z80.msx.lib.sysvars :as sysvars]
             [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
             [clj-z80.msx.image :refer [set-konami5-page]]
-            [mge.vdp :as vdp]))
+            [mge.engine-vdp :as vdp]))
 
 (defasmproc load-patterns {:page :code}
   ;; HL=patterns

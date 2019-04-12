@@ -1,13 +1,13 @@
-(ns mge.engine-core
+(ns mge.engine-engine
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sysvars :as sysvars]
-            [mge.sprites :as spr]
-            [mge.screens :as scr]
-            [mge.keys :as keys]
-            [mge.music :as music]
-            [mge.tilemap :as tilemap]
-            [mge.offscreen :as off]))
+            [mge.engine-sprites :as spr]
+            [mge.engine-screens :as scr]
+            [mge.engine-keys :as keys]
+            [mge.engine-music :as music]
+            [mge.engine-tilemap :as tilemap]
+            [mge.engine-offscreen :as off]))
 
 (defasmbyte skip-frame)
 
