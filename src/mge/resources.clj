@@ -29,7 +29,7 @@
 
 (defn list-sprites-files
   []
-  (list-files "sprites" ".png"))
+  (list-files "re/sprites" ".png"))
 
 (defn list-screen-scripts-files
   []
@@ -45,19 +45,19 @@
 
 (defn list-title-files
   []
-  (list-files "titles" ".png"))
+  (list-files "res/titles" ".png"))
 
 (defn list-music-files
   []
-  (list-files "music" ".pt3"))
+  (list-files "res/music" ".pt3"))
 
 (defn list-sfx-files
   []
-  (list-files "sfx" ".afb"))
+  (list-files "res/sfx" ".afb"))
 
 (defn list-tilemaps-files
   []
-  (list-files "tilemaps" ".tmx"))
+  (list-files "res/tilemaps" ".tmx"))
 
 
 ;; sprites
