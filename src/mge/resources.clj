@@ -27,44 +27,23 @@
        (filter #(str/ends-with? (str/lower-case %) extension))
        doall))
 
-(defn list-sprites-files
+(defn collect-resources
   []
-  (list-files "res/sprites" ".png"))
-
-(defn list-screen-scripts-files
-  []
-  (list-files "scripts/screens" ".mge"))
-
-(defn list-sprite-scripts-files
-  []
-  (list-files "scripts/sprites" ".mge"))
-
-(defn list-animation-scripts-files
-  []
-  (list-files "scripts/animations" ".mge"))
-
-(defn list-title-files
-  []
-  (list-files "res/titles" ".png"))
-
-(defn list-music-files
-  []
-  (list-files "res/music" ".pt3"))
-
-(defn list-sfx-files
-  []
-  (list-files "res/sfx" ".afb"))
-
-(defn list-tilemaps-files
-  []
-  (list-files "res/tilemaps" ".tmx"))
+  {:sprites  (list-files "res/sprites" ".png")
+   :screen-scripts (list-files "scripts/screens" ".mge")
+   :sprite-scripts (list-files "scripts/sprites" ".mge")
+   :animation-scripts (list-files "scripts/animations" ".mge")
+   :titles (list-files "res/titles" ".png")
+   :musics (list-files "res/music" ".pt3")
+   :sfx (list-files "res/sfx" ".afb")
+   :tilemaps (list-files "res/tilemaps" ".tmx")})
 
 
 ;; sprites
 
 (defn- make-sprites
-  []
-  (doseq [file (list-sprites-files)]
+  [files]
+  (doseq [file files]
     (let [name      (.getName file)
           id        (make-sprite-id name)
           id-color1 (make-sprite-color1-id name)
@@ -83,8 +62,8 @@
 ;; scripts
 
 (defn- compile-screen-scripts
-  []
-  (->> (list-screen-scripts-files)
+  [files]
+  (->> files
        (map (fn [file]
               (let [name   (.getName file)
                     id     (make-screen-script-id name)
@@ -96,8 +75,8 @@
        doall))
 
 (defn- compile-sprite-scripts
-  []
-  (->> (list-sprite-scripts-files)
+  [files]
+  (->> files
        (map (fn [file]
               (let [name   (.getName file)
                     id     (make-sprite-script-id name)
@@ -109,8 +88,8 @@
        doall))
 
 (defn- compile-animation-scripts
-  []
-  (->> (list-animation-scripts-files)
+  [files]
+  (->> files
        (map (fn [file]
               (let [name   (.getName file)
                     id     (make-animation-script-id name)
@@ -155,8 +134,8 @@
     [patterns colors]))
 
 (defn- make-titles
-  []
-  (doseq [file (list-title-files)]
+  [files]
+  (doseq [file files]
     (let [name              (.getName file)
           [patterns colors] (compile-title file)]
       (println "Compiled title" name
@@ -171,8 +150,8 @@
 ;; music
 
 (defn- make-music
-  []
-  (doseq [file (list-music-files)]
+  [files]
+  (doseq [file files]
     (let [name (.getName file)
           data (let [arr (byte-array (.length file))]
                  (doto (FileInputStream. file)
@@ -190,8 +169,8 @@
 ;; sfx
 
 (defn- make-sfx
-  []
-  (doseq [file (list-sfx-files)]
+  [files]
+  (doseq [file files]
     (let [name (.getName file)
           data (let [arr (byte-array (.length file))]
                  (doto (FileInputStream. file)
@@ -208,8 +187,8 @@
 ;; tilemaps
 
 (defn- make-tilemaps
-  []
-  (doseq [file (list-tilemaps-files)]
+  [files]
+  (doseq [file files]
     (make-tilemap (.getPath file))))
 
 
@@ -221,13 +200,23 @@
   (when asm-file
     (spit asm-file ""))
   (binding [game-folder current-game-folder]
-    ;; compile misc resources
-    (make-sprites)
-    (make-titles)
-    (make-music)
-    (make-sfx)
-    (make-tilemaps)
-    ;; compile code resource
-    (make-scripts (compile-screen-scripts) asm-file)
-    (make-scripts (compile-sprite-scripts) asm-file)
-    (make-scripts (compile-animation-scripts) asm-file)))
+    (let [resources (collect-resources)]
+      ;; convert resources
+      (-> :sprites resources make-sprites)
+      (-> :titles resources make-titles)
+      (-> :musics resources make-music)
+      (-> :sfx resources make-sfx)
+      (-> :tilemaps resources make-tilemaps)
+      ;; compile scripts
+      (-> :screen-scripts
+          resources
+          compile-screen-scripts
+          (make-scripts asm-file))
+      (-> :sprite-scripts
+          resources
+          compile-sprite-scripts
+          (make-scripts asm-file))
+      (-> :animation-scripts
+          resources
+          compile-animation-scripts
+          (make-scripts asm-file)))))
