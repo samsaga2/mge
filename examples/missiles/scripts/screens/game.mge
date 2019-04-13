@@ -5,12 +5,12 @@ global score
 
 sub init
     load tilemap, "level1.tmx"
-    new sprite, "player.scr"
-    new sprite, "missile.scr", 1912 ' 239*8
-    new sprite, "missile.scr", 1784 ' 223*8
-    new sprite, "missile.scr", 1656 ' 207*8
-    new sprite, "missile.scr", 1528 ' 191*8
-    new sprite, "missile.scr", 1400 ' 175*8
+    new sprite, "player.mge"
+    new sprite, "missile.mge", 1912 ' 239*8
+    new sprite, "missile.mge", 1784 ' 223*8
+    new sprite, "missile.mge", 1656 ' 207*8
+    new sprite, "missile.mge", 1528 ' 191*8
+    new sprite, "missile.mge", 1400 ' 175*8
     play music, "oldskool.pt3"
     load sfx, "effects.afb"
 

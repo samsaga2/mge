@@ -22,7 +22,7 @@ sub update
        score = score + 1
        zprint 7, 23, score
        state = state_explosion
-       play animation, "missile_explosion.scr"
+       play animation, "missile_explosion.mge"
        return
     endif
 

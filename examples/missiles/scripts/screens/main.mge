@@ -4,6 +4,6 @@ endsub
 
 sub update
     if keypressed "space" then
-       load screen, "game.scr"
+       load screen, "game.mge"
     endif
 endsub

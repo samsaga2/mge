@@ -44,59 +44,59 @@
 (defn- make-sprites
   [files]
   (doseq [file files]
-    (let [name      (.getName file)
-          id        (make-sprite-id name)
-          id-color1 (make-sprite-color1-id name)
-          id-color2 (make-sprite-color2-id name)
-          sprite    (convert-sprite-16x16 file)
-          colors    (:colors sprite)
-          patterns  (flatten (:patterns sprite))]
-      (assert (<= (count colors) 2))
-      (println "Compiled sprite" name
-               (count patterns) "bytes")
-      (make-proc id res-pages [(apply db patterns)])
-      (set-label! id-color1 (first colors))
-      (set-label! id-color2 (or (second colors) 0)))))
+    (let [name (.getName file)]
+      (print "Compiling sprite" name "")
+      (let [id        (make-sprite-id name)
+            id-color1 (make-sprite-color1-id name)
+            id-color2 (make-sprite-color2-id name)
+            sprite    (convert-sprite-16x16 file)
+            colors    (:colors sprite)
+            patterns  (flatten (:patterns sprite))]
+        (assert (<= (count colors) 2))
+        (println (count patterns) "bytes")
+        (make-proc id res-pages [(apply db patterns)])
+        (set-label! id-color1 (first colors))
+        (set-label! id-color2 (or (second colors) 0))))))
 
 
 ;; scripts
 
 (defn- compile-screen-scripts
-  [files]
+  [files resources]
   (->> files
        (map (fn [file]
-              (let [name   (.getName file)
-                    id     (make-screen-script-id name)
-                    script (sc/compile-script file)]
-                (println "Compiled screen script" name
-                         (apply + (map count (vals script))) "opcodes")
-                [id script])))
+              (let [name (.getName file)]
+                (print "Compiling screen script" name "")
+                (let [id     (make-screen-script-id name)
+                      script (sc/compile-script file resources)]
+                  (println (apply + (map count (vals script))) "opcodes")
+                  [id script]))))
        (into {})
        doall))
 
 (defn- compile-sprite-scripts
-  [files]
+  [files resources]
   (->> files
        (map (fn [file]
-              (let [name   (.getName file)
-                    id     (make-sprite-script-id name)
-                    script (sc/compile-script file)]
-                (println "Compiled sprite script" name
-                         (apply + (map count (vals script))) "opcodes")
-                [id script])))
+              (let [name (.getName file)]
+                (print "Compiling sprite script" name "")
+                (let [id     (make-sprite-script-id name)
+                      script (sc/compile-script file resources)]
+                  (println (apply + (map count (vals script))) "opcodes")
+                  [id script]))))
        (into {})
        doall))
 
 (defn- compile-animation-scripts
-  [files]
+  [files resources]
   (->> files
        (map (fn [file]
-              (let [name   (.getName file)
-                    id     (make-animation-script-id name)
-                    script (sc/compile-animation file)]
-                (println "Compiled animation script" name
-                         (apply + (map count script)) "opcodes")
-                [id {:update script}])))
+              (let [name (.getName file)]
+                (print "Compiling animation script" name "")
+                (let [id     (make-animation-script-id name)
+                      script (sc/compile-animation file resources)]
+                  (println (apply + (map count script)) "opcodes")
+                  [id {:update script}]))))
        (into {})
        doall))
 
@@ -109,7 +109,7 @@
                      (println)
                      (println))]
       (spit asm-file asm-code :append true))))
-  
+
 (defn- make-scripts
   [scripts asm-file]
   (doseq [[res-id script] scripts]
@@ -136,34 +136,31 @@
 (defn- make-titles
   [files]
   (doseq [file files]
-    (let [name              (.getName file)
-          [patterns colors] (compile-title file)]
-      (println "Compiled title" name
-               (+ (count patterns)
-                  (count colors))
-               "bytes")
-      (make-proc (make-title-pattern-id name) res-pages
-                 [[:db patterns]])
-      (make-proc (make-title-color-id name) res-pages
-                 [[:db colors]]))))
+    (let [name (.getName file)]
+      (print "Compiling title" name "")
+      (let [[patterns colors] (compile-title file)]
+        (println (+ (count patterns) (count colors)) "bytes")
+        (make-proc (make-title-pattern-id name) res-pages
+                   [[:db patterns]])
+        (make-proc (make-title-color-id name) res-pages
+                   [[:db colors]])))))
 
 ;; music
 
 (defn- make-music
   [files]
   (doseq [file files]
-    (let [name (.getName file)
-          data (let [arr (byte-array (.length file))]
-                 (doto (FileInputStream. file)
-                   (.skip 100)
-                   (.read arr)
-                   (.close))
-                 (vec arr))]
-      (println "Compiled music" name
-               (count data)
-               "bytes")
-      (make-proc (make-music-id name) res-pages
-                 [[:db data]]))))
+    (let [name (.getName file)]
+      (print "Compiling music" name "")
+      (let [data (let [arr (byte-array (.length file))]
+                   (doto (FileInputStream. file)
+                     (.skip 100)
+                     (.read arr)
+                     (.close))
+                   (vec arr))]
+        (println (count data) "bytes")
+        (make-proc (make-music-id name) res-pages
+                   [[:db data]])))))
 
 
 ;; sfx
@@ -171,17 +168,16 @@
 (defn- make-sfx
   [files]
   (doseq [file files]
-    (let [name (.getName file)
-          data (let [arr (byte-array (.length file))]
-                 (doto (FileInputStream. file)
-                   (.read arr)
-                   (.close))
-                 (vec arr))]
-      (println "Compiled sfx" name
-               (count data)
-               "bytes")
-      (make-proc (make-sfx-id name) res-pages
-                 [[:db data]]))))
+    (let [name (.getName file)]
+      (print "Compiling sfx" name "")
+      (let [data (let [arr (byte-array (.length file))]
+                   (doto (FileInputStream. file)
+                     (.read arr)
+                     (.close))
+                   (vec arr))]
+        (println (count data) "bytes")
+        (make-proc (make-sfx-id name) res-pages
+                   [[:db data]])))))
 
 
 ;; tilemaps
@@ -210,13 +206,13 @@
       ;; compile scripts
       (-> :screen-scripts
           resources
-          compile-screen-scripts
+          (compile-screen-scripts resources)
           (make-scripts asm-file))
       (-> :sprite-scripts
           resources
-          compile-sprite-scripts
+          (compile-sprite-scripts resources)
           (make-scripts asm-file))
       (-> :animation-scripts
           resources
-          compile-animation-scripts
+          (compile-animation-scripts resources)
           (make-scripts asm-file)))))

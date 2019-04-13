@@ -14,4 +14,4 @@ load sprite, "player_right_2.png"
 next frame
 next frame
 next frame
-play animation, "player_walk_right.scr"
+play animation, "player_walk_right.mge"

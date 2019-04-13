@@ -6,6 +6,7 @@
             [mge.script-gencode :as gc]
             [mge.engine-script :as s]
             [mge.script-peephole :as ph]
+            [mge.script-env :as env]
             [clojure.string :as str]
             [mge.engine-sprites :as spr]
             [clj-z80.asm :refer [make-var]]))
@@ -16,6 +17,11 @@
 (def ^:dynamic *script-file* nil)
 
 (declare compile-ops)
+
+(defn- assert-res-exists
+  [env res-type filename]
+  (when-not (env/exists-res env res-type filename)
+    (throw (Exception. (str "Resource named `" filename "' of type `" (name res-type) "' cannot be found")))))
 
 (defn- compile-sprite-ops
   [env op]
@@ -35,31 +41,36 @@
   [env op]
   (match op
          [:load "sprite" [:str s]]
-         [(gc/sprite-image env
-                           (make-sprite-id s)
-                           (make-sprite-color1-id s)
-                           (make-sprite-color2-id s))]
+         (do (assert-res-exists env :sprites s)
+             [(gc/sprite-image env
+                               (make-sprite-id s)
+                               (make-sprite-color1-id s)
+                               (make-sprite-color2-id s))])
 
          [:load "title" [:str s]]
-         [(gc/load-title env
-                         (make-title-pattern-id s)
-                         (make-title-color-id s))]
+         (do (assert-res-exists env :titles s)
+             [(gc/load-title env
+                             (make-title-pattern-id s)
+                             (make-title-color-id s))])
          [:load "sfx" [:str s]]
-         [(gc/sfx-load env (make-sfx-id s))]
+         (do (assert-res-exists env :sfx s)
+             [(gc/sfx-load env (make-sfx-id s))])
 
          [:load "tilemap" [:str s]]
-         [(gc/tilemap-load env
-                           (make-tilemap-id s :pattern)
-                           (make-tilemap-id s :colors)
-                           (make-tilemap-id s :attr)
-                           (make-tilemap-id s :lines)
-                           (make-tilemap-id s :map)
-                           (make-tilemap-id s :types))]
+         (do (assert-res-exists env :tilemaps s)
+             [(gc/tilemap-load env
+                               (make-tilemap-id s :pattern)
+                               (make-tilemap-id s :colors)
+                               (make-tilemap-id s :attr)
+                               (make-tilemap-id s :lines)
+                               (make-tilemap-id s :map)
+                               (make-tilemap-id s :types))])
 
          [:load "screen" [:str s]]
-         [(gc/screen-load env
-                          (make-screen-script-id s :init)
-                          (make-screen-script-id s :update))]
+         (do (assert-res-exists env :screen-scripts s)
+             [(gc/screen-load env
+                              (make-screen-script-id s :init)
+                              (make-screen-script-id s :update))])
 
          :else nil))
 
@@ -67,16 +78,19 @@
   [env op]
   (match op
          [:play-str "animation" [:str s]]
-         [(gc/sprite-animation env (make-animation-script-id s :update))]
+         (do (assert-res-exists env :animation-scripts s)
+             [(gc/sprite-animation env (make-animation-script-id s :update))])
 
          [:play-str "music" [:str s]]
-         [(gc/music-play env (make-music-id s))]
+         (do (assert-res-exists env :musics s)
+             [(gc/music-play env (make-music-id s))])
 
          [:play-num "sfx" arg]
          [(gc/sfx-play env arg)]
 
          [:anim-play [:str s]]
-         [(gc/animation-play env (make-animation-script-id s :update))]
+         (do (assert-res-exists env :animation-scripts s)
+             [(gc/animation-play env (make-animation-script-id s :update))])
 
          :else nil))
 
@@ -229,8 +243,8 @@
 
 (let [globals (atom {})]
   (defn- compile-script-prog
-    [prog]
-    (let [env (atom {:env          (merge (gc/default-env) @globals)
+    [prog resources]
+    (let [env (atom {:env          (merge (env/make-env resources) @globals)
                      :globals      globals
                      :local-index  0})]
       (match prog
@@ -241,8 +255,8 @@
 ;; animation prog
 
 (defn- compile-animation-prog
-  [prog]
-  (let [env (gc/default-env)]
+  [prog resources]
+  (let [env (env/make-env resources)]
     (match prog
            [:prog & ops]
            (->> (concat (compile-ops env ops)
@@ -270,13 +284,13 @@
     (make-parser animation file)))
 
 (defn compile-script
-  [file]
+  [file resources]
   (binding [*script-file* file]
     (let [p (script-parser file)]
-      (compile-script-prog p))))
+      (compile-script-prog p resources))))
 
 (defn compile-animation
-  [file]
+  [file resources]
   (binding [*script-file* file]
     (let [p (animation-parser file)]
-      (compile-animation-prog p))))
+      (compile-animation-prog p resources))))

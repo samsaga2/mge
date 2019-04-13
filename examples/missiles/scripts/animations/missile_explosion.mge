@@ -35,4 +35,4 @@ x = x - 4
 next frame
 next frame
 delete
-new sprite, "missile.scr", 2040
+new sprite, "missile.mge", 2040

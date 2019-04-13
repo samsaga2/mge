@@ -1,5 +1,5 @@
 sub init
-    new sprite, "player.scr"
+    new sprite, "player.mge"
 endsub
 
 sub update

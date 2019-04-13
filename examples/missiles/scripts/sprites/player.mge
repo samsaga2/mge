@@ -8,7 +8,7 @@ property state
 property next_state
 
 sub init
-    play animation, "player_idle.scr"
+    play animation, "player_idle.mge"
     type = 1
     width = 6
     height = 7
@@ -55,19 +55,19 @@ sub update
     if next_state = state_walking then
        if state = state_idle then
           state = state_walking
-          play animation, "player_right.scr"
+          play animation, "player_right.mge"
        endif
     else
        if state = state_walking then
           state = state_idle
-          play animation, "player_idle.scr"
+          play animation, "player_idle.mge"
        endif
     endif
 
     ' fire bullet
     if keypressed "space" then
         if nbullets < 2 then
-            new sprite, "bullet.scr", x, y
+            new sprite, "bullet.mge", x, y
         endif
     endif
 
@@ -97,6 +97,6 @@ sub update
 endsub
 
 sub dead
-    play animation, "player_dead.scr"
+    play animation, "player_dead.mge"
     state = state_dead
 endsub

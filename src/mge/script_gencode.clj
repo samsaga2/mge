@@ -14,33 +14,8 @@
             [mge.engine-music :as music]
             [mge.engine-tilemap :as tilemap]
             [mge.engine-screens :as scr]
-            [mge.engine-offscreen :as off]))
-
-
-;; env
-
-(defn default-env
-  []
-  (let [global-vars (->> s/args
-                         (map (fn [g] [(second (str/split (name g) #"---"))
-                                       {:addr g
-                                        :type :global}]))
-                         (into {}))
-        local-vars  {"type"   spr/+spr-type+
-                     "x"      spr/+spr-x+
-                     "y"      spr/+spr-y+
-                     "width"  spr/+spr-w+
-                     "height" spr/+spr-h+}
-        local-vars  (->> local-vars
-                         (map (fn [[k v]] [k {:addr v
-                                              :type :local}]))
-                         (into {}))]
-    (merge global-vars local-vars)))
-
-(defn- get-env-var
-  [env id]
-  (or (get env id)
-      (throw (Exception. (str "Variable " id " not found")))))
+            [mge.engine-offscreen :as off]
+            [mge.script-env :as env]))
 
 
 ;; args
@@ -51,7 +26,7 @@
   [env id]
   (if (= (str/lower-case id) "rnd")
     [[:call u/random-word]]
-    (if-let [v (get-env-var env id)]
+    (if-let [v (env/get-env-var env id)]
       (let [i (:addr v)]
         (case (:type v)
           :local [[:ld :l [:ix i]]
@@ -139,7 +114,7 @@
   (let [type (first arg)
         id   (second arg)]
     (case type
-      :id (if-let [v (get-env-var env id)]
+      :id (if-let [v (env/get-env-var env id)]
             (let [i (:addr v)]
               (case (:type v)
                 :local  [[:ld [:ix i] :l]
