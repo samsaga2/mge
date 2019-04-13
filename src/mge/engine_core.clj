@@ -1,4 +1,4 @@
-(ns mge.engine-engine
+(ns mge.engine-core
   (:require [clj-z80.asm :refer :all :refer-macros :all]
             [clj-z80.msx.lib.bios :as bios]
             [clj-z80.msx.lib.sysvars :as sysvars]
