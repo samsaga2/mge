@@ -16,8 +16,8 @@ sub init
     dir = dir_right
 	anim = anim_idle
     type = 1
-    x = 100*8
-	y = 100*8
+    x = 120*8
+	y = 120*8
 	speed_x = 0
 	speed_y = 0
 	jumping = 0

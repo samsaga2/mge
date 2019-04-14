@@ -1,4 +1,5 @@
 sub init
+    load tilemap, "test.tmx"
     new sprite, "player.mge"
 endsub
 
