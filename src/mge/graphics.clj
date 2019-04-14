@@ -5,20 +5,23 @@
 
 ;; image
 
+(defn- get-tile-image
+  [image off-x off-y pixel-fn]
+  (for [y (range 8)]
+    (for [x (range 8)]
+      (let [pixel (.getRGB image (int (+ off-x x)) (int (+ off-y y)))]
+        (pixel-fn pixel)))))
+  
+
 (defn- split-image-into-tiles
-  [image color-conversion]
-  (let [w        (width image)
-        h        (height image)
-        get-tile (fn [start-x start-y]
-                   (for [y (range 8)]
-                     (for [x (range 8)]
-                       (let [pixel (.getRGB image (int (+ start-x x)) (int (+ start-y y)))]
-                         (color-conversion pixel)))))]
-    (assert (= (mod w 8) 0))
-    (assert (= (mod h 8) 0))
+  [image pixel-fn]
+  (let [w (width image)
+        h (height image)]
+    (when-not (and (= (mod w 8) 0) (= (mod h 8) 0))
+      (throw (Exception. (str "Image must be multiple of 8x8 pixels"))))
     (for [y (range 0 h 8)]
       (for [x (range 0 w 8)]
-        (get-tile x y)))))
+        (get-tile-image image x y pixel-fn)))))
 
 
 ;; msx1 colors
@@ -57,16 +60,21 @@
        first
        first))
 
+(defn- get-pixel-rgba
+  [pixel]
+  (let [a (bit-and (bit-shift-right pixel 24) 0xff)
+        r (bit-and (bit-shift-right pixel 16) 0xff)
+        g (bit-and (bit-shift-right pixel 8) 0xff)
+        b (bit-and (bit-shift-right pixel 0) 0xff)]
+    [r g b a]))
+
 (defn- extract-image-msx1-colors
   [image]
   (->> image get-pixels distinct
-       (map (fn [orig-color]
-              (let [a         (bit-and (bit-shift-right orig-color 24) 0xff)
-                    r         (bit-and (bit-shift-right orig-color 16) 0xff)
-                    g         (bit-and (bit-shift-right orig-color 8) 0xff)
-                    b         (bit-and (bit-shift-right orig-color 0) 0xff)
-                    msx-color (get-msx1-color-index [r g b a])]
-                [orig-color msx-color])))
+       (map (fn [pixel]
+              (let [rgba      (get-pixel-rgba pixel)
+                    msx-color (get-msx1-color-index rgba)]
+                [pixel msx-color])))
        (into {})))
 
 
@@ -118,26 +126,26 @@
   [filename]
   (let [image           (load-image filename)
         w               (width image)
-        h               (height image)
-        image-colors    (extract-image-msx1-colors image)
-        final-colors    (vec (remove zero? (sort (vals image-colors))))
-        pixels          (get-pixels image)
-        parse-row       (fn [row] (BigInteger. (apply str row) 2))
-        convert-part    (fn [x-offset color]
-                          (map (fn [y]
-                                 (->> (range 8)
-                                      (map #(+ % x-offset (* (height image) y)))
-                                      (map #(get pixels %))
-                                      (map #(get image-colors %))
-                                      (map #(if (= % color) 1 0))
-                                      parse-row))
-                               (range h)))
-        convert-pattern (fn [color]
-                          (vec
-                           (concat (convert-part 0 color)
-                                   (convert-part 8 color))))
-        final-patterns  (doall (mapv convert-pattern final-colors))]
-    (assert (= w 16))
-    (assert (= h 16))
-    {:colors   final-colors
-     :patterns final-patterns}))
+        h               (height image)]
+    (when-not (and (= w 16) (= h 16))
+      (throw (Exception. (str "Sprite image `" image "' must have 16x16 size"))))
+    (let [image-colors    (extract-image-msx1-colors image)
+          final-colors    (vec (remove zero? (sort (vals image-colors))))
+          pixels          (get-pixels image)
+          parse-row       (fn [row] (BigInteger. (apply str row) 2))
+          convert-part    (fn [x-offset color]
+                            (map (fn [y]
+                                   (->> (range 8)
+                                        (map #(+ % x-offset (* (height image) y)))
+                                        (map #(get pixels %))
+                                        (map #(get image-colors %))
+                                        (map #(if (= % color) 1 0))
+                                        parse-row))
+                                 (range h)))
+          convert-pattern (fn [color]
+                            (vec
+                             (concat (convert-part 0 color)
+                                     (convert-part 8 color))))
+          final-patterns  (doall (mapv convert-pattern final-colors))]
+      {:colors   final-colors
+       :patterns final-patterns})))
