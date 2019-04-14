@@ -4,21 +4,39 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.java.shell :refer [sh]]
             [mge.resources :refer [compile-resources]]
+            [clojure.java.io :as io]
             mge.engine-core
             mge.engine-image))
 
-(defn- build
+(defn- assert-directory
+  [dir-name]
+  (let [dir (io/file dir-name)]
+    (when-not (and (.exists dir)
+                   (.isDirectory dir))
+      (throw (Exception. (str "Game directory `" dir-name "' does not exists or is not a directory")))))) 
+
+(defn- run-emulator
+  [rom-file]
+  (sh "openmsx" "-carta" rom-file "-ext" "debugdevice"))
+
+(defn- build-game
   [{:keys [chdir sym name run-openmsx asm-code]
     :or {name "game" chdir "game"}}]
-  (let [rom-file (str name ".rom")
-        sym-file (str name ".sym")
-        asm-file (when asm-code (str name ".asm"))]
-    (compile-resources asm-file chdir)
+  ;; check game folder
+  (assert-directory chdir)
+  ;; compile resources
+  (let [asm-file (when asm-code (str name ".asm"))]
+    (compile-resources asm-file chdir))
+  (let [rom-file (str name ".rom")]
+    ;; create game rom
     (build-asm-image-file rom-file :mge-konami5)
+    ;; create debug sym file
     (when sym
-      (build-sym-file sym-file))
+      (let [sym-file (str name ".sym")]
+        (build-sym-file sym-file)))
+    ;; run the game on the emulator
     (when run-openmsx
-      (sh "openmsx" "-carta" rom-file "-ext" "debugdevice"))))
+      (run-emulator rom-file))))
 
 (def mge-options
   [["-s" "--sym" "Generate sym file"]
@@ -32,5 +50,5 @@
 (defn -main
   [& args]
   (let [args (parse-opts args mge-options)]
-    (build (:options args)))
+    (build-game (:options args)))
   (System/exit 0))
