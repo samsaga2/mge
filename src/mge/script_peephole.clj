@@ -87,6 +87,35 @@
                   [:inc :hl]]
                  (optimize-pass tl))
 
+         [[:ld :de n1]
+          [:ld :hl n2]
+          [:or :a]
+          [:sbc :hl :de]
+          & tl]
+         (concat [[:ld :hl (- n2 n1)]]
+                 (optimize-pass tl))
+
+         [[:ld :de n1]
+          [:ld :hl n2]
+          [:add :hl :de]
+          & tl]
+         (concat [[:ld :hl (+ n2 n1)]]
+                 (optimize-pass tl))
+
+         [[:ld :de n1]
+          [:ld :hl n2]
+          [:mult :hl :de]
+          & tl]
+         (concat [[:ld :hl (* n2 n1)]]
+                 (optimize-pass tl))
+
+         [[:ld :de n1]
+          [:ld :hl n2]
+          [:div :hl :de]
+          & tl]
+         (concat [[:ld :hl (int (/ n2 n1))]]
+                 (optimize-pass tl))
+
          ;; finish peephole
          []
          []

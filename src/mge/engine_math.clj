@@ -1,4 +1,5 @@
-(ns mge.engine-math)
+(ns mge.engine-math
+  (:require [clj-z80.asm :refer :all :refer-macros :all]))
 
 (defn- log2
   [n]
@@ -25,3 +26,11 @@
     (apply concat
            (repeat n [[:sra :d]
                       [:rr :e]]))))
+
+(defasmproc mult {:page :code}
+  ;; TODO
+  [:ret])
+
+(defasmproc div {:page :code}
+  ;; TODO
+  [:ret])

@@ -26,7 +26,8 @@ endsub
 sub update
     call update_keys
 	call update_anim
-	call update_move
+	call update_move_x
+	call update_move_y
 endsub
 
 sub update_keys
@@ -113,7 +114,24 @@ sub update_anim
 	endif
 endsub
 
-sub update_move
-    x = x + speed_x
+sub update_move_x
+	if speed_x > 0 then
+		if x >= (256-16)*8 then
+			speed_x = 0
+			return
+		endif
+	endif
+
+	if speed_x < 0 then
+	    if x <= 8*2 then
+	   	    speed_x = 0
+		    return
+	    endif
+	endif
+
+	x = x + speed_x
+endsub
+	
+sub update_move_y
 	y = y + speed_y
 endsub

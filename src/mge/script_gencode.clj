@@ -41,52 +41,36 @@
 
 (defn- load-arg-mul
   [env i j]
-  (match [i j]
-
-         [[:num n1] [:num n2]]
-         [[:ld :hl (int (* (Integer. n1) (Integer. n2)))]]
-
-         :else
-         (throw (Exception. "Not supported"))))
+  (concat (load-arg env j)
+          [[:push :hl]]
+          (load-arg env i)
+          [[:pop :de]
+           [:mult :hl :de]]))
 
 (defn- load-arg-div
   [env i j]
-  (match [i j]
-
-         [[:num n1] [:num n2]]
-         [[:ld :hl (int (/ (Integer. n1) (Integer. n2)))]]
-
-         :else
-         (throw (Exception. "Not supported"))))
+  (concat (load-arg env j)
+          [[:push :hl]]
+          (load-arg env i)
+          [[:pop :de]
+           [:div :hl :de]]))
 
 (defn- load-arg-add
   [env i j]
-  (match [i j]
-
-         [[:num n1] [:num n2]]
-         (+ (Integer. n1) (Integer. n2))
-
-         :else
-         (concat (load-arg env j)
-                 [[:push :hl]]
-                 (load-arg env i)
-                 [[:pop :de]
-                  [:add :hl :de]])))
+  (concat (load-arg env j)
+          [[:push :hl]]
+          (load-arg env i)
+          [[:pop :de]
+           [:add :hl :de]]))
 
 (defn- load-arg-sub
   [env i j]
-  (match [i j]
-
-         [[:num n1] [:num n2]]
-         (+ (Integer. n1) (Integer. n2))
-
-         :else
-         (concat (load-arg env j)
-                 [[:push :hl]]
-                 (load-arg env i)
-                 [[:pop :de]
-                  [:or :a]
-                  [:sbc :hl :de]]))) 
+  (concat (load-arg env j)
+          [[:push :hl]]
+          (load-arg env i)
+          [[:pop :de]
+           [:or :a]
+           [:sbc :hl :de]])) 
 
 (defn- load-arg
   [env arg]

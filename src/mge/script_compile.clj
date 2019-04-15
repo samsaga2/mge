@@ -301,3 +301,7 @@
   (binding [*script-file* file]
     (let [p (animation-parser file)]
       (compile-animation-prog p resources))))
+
+
+(let [p (insta/parser (io/resource "animation.bnf") :string-ci true)]
+  (compile-animation-prog (p "x = (256-16)*8") {}))
