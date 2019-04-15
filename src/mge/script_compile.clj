@@ -251,6 +251,13 @@
              [:prog & subs]
              (doall (into {} (map (partial compile-root env) subs)))))))
 
+(defn- add-missing-update
+  [script]
+  (let [script-subs (set (map first script))]
+    (if (not (get script-subs :update))
+      (let [empty-update (compile-root (atom {}) [:sub [:id "update"]])]
+        (conj script empty-update))
+      script)))
 
 ;; animation prog
 
@@ -287,7 +294,7 @@
   [file resources]
   (binding [*script-file* file]
     (let [p (script-parser file)]
-      (compile-script-prog p resources))))
+      (add-missing-update (compile-script-prog p resources)))))
 
 (defn compile-animation
   [file resources]
