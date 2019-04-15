@@ -46,6 +46,7 @@
   (doseq [file files]
     (let [name (.getName file)]
       (print "Compiling sprite" name "")
+      (flush)
       (let [id        (make-sprite-id name)
             id-color1 (make-sprite-color1-id name)
             id-color2 (make-sprite-color2-id name)
@@ -67,6 +68,7 @@
        (map (fn [file]
               (let [name (.getName file)]
                 (print "Compiling screen script" name "")
+                (flush)
                 (let [id     (make-screen-script-id name)
                       script (sc/compile-script file resources)]
                   (println (apply + (map count (vals script))) "opcodes")
@@ -80,6 +82,7 @@
        (map (fn [file]
               (let [name (.getName file)]
                 (print "Compiling sprite script" name "")
+                (flush)
                 (let [id     (make-sprite-script-id name)
                       script (sc/compile-script file resources)]
                   (println (apply + (map count (vals script))) "opcodes")
@@ -93,6 +96,7 @@
        (map (fn [file]
               (let [name (.getName file)]
                 (print "Compiling animation script" name "")
+                (flush)
                 (let [id     (make-animation-script-id name)
                       script (sc/compile-animation file resources)]
                   (println (apply + (map count script)) "opcodes")
@@ -138,6 +142,7 @@
   (doseq [file files]
     (let [name (.getName file)]
       (print "Compiling title" name "")
+      (flush)
       (let [[patterns colors] (compile-title file)]
         (println (+ (count patterns) (count colors)) "bytes")
         (make-proc (make-title-pattern-id name) res-pages
@@ -152,6 +157,7 @@
   (doseq [file files]
     (let [name (.getName file)]
       (print "Compiling music" name "")
+      (flush)
       (let [data (let [arr (byte-array (.length file))]
                    (doto (FileInputStream. file)
                      (.skip 100)
@@ -170,6 +176,7 @@
   (doseq [file files]
     (let [name (.getName file)]
       (print "Compiling sfx" name "")
+      (flush)
       (let [data (let [arr (byte-array (.length file))]
                    (doto (FileInputStream. file)
                      (.read arr)
