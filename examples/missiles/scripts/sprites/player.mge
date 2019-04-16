@@ -97,6 +97,7 @@ sub update
 endsub
 
 sub dead
+	stop music
     play animation, "player_dead.mge"
     state = state_dead
 endsub

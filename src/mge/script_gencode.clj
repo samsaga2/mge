@@ -319,7 +319,7 @@
 
 (defn music-stop
   [env]
-  [[:call music/stop-music]])
+  [[:call music/init-music]])
 
 (defn sfx-load
   [env res-id]

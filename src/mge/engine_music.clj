@@ -11,7 +11,6 @@
 (def pt3-init   (+ replayer-address 12))
 (def pt3-rout   (+ replayer-address 15))
 (def pt3-play   (+ replayer-address 18))
-(def pt3-mute   (+ replayer-address 21))
 
 (defasmbyte music-page)
 (defasmbyte sfx-page)
@@ -47,11 +46,9 @@
   (set-konami5-page 3 :a)
   [:call pt3-play]
   ;; sfx
-  (label :sfx
-         [:ld :a [sfx-page]]
-         (set-konami5-page 3 :a)
-         [:jp ayfx-play])
-  [:ret])
+  [:ld :a [sfx-page]]
+  (set-konami5-page 3 :a)
+  [:jp ayfx-play])
 
 (defasmproc play-music {:page :code}
   ;; in a=page hl=address
@@ -60,11 +57,6 @@
   [:ld [music-page] :a]
   (set-konami5-page 3 :a)
   [:jp pt3-init])
-
-(defasmproc stop-music {:page :code}
-  [:xor :a]
-  [:ld [music-page] :a]
-  [:jp pt3-mute])
 
 (defasmproc load-sfx {:page :code}
   ;; in a=page hl=address

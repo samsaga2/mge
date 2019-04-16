@@ -8,7 +8,6 @@
 	jp PT3_INIT                   ; +12
 	jp PT3_ROUT                   ; +15
 	jp PT3_PLAY                   ; +18
-	jp PT3_MUTE                   ; +21
 	include PT3-RAM.ASM
 	include ayFX-RAM.ASM
 	include PT3-ROM.ASM
