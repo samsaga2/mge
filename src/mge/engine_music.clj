@@ -11,6 +11,7 @@
 (def pt3-init   (+ replayer-address 12))
 (def pt3-rout   (+ replayer-address 15))
 (def pt3-play   (+ replayer-address 18))
+(def pt3-mute   (+ replayer-address 21))
 
 (defasmbyte music-page)
 (defasmbyte sfx-page)
