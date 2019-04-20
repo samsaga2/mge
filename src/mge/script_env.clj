@@ -3,7 +3,7 @@
             [mge.engine-script :as s]
             [mge.engine-sprites :as spr]))
 
-(defn make-global-env
+(defn make-func-args-env
   []
   (->> s/args
        (map (fn [g] [(second (str/split (name g) #"---"))
@@ -50,10 +50,10 @@
 
 (defn make-env
   [resources]
-  (let [global-vars (make-global-env)
-        local-vars  (make-local-env)
-        res-vars    (make-resources-env resources)]
-    (merge global-vars local-vars res-vars)))
+  (let [args-vars  (make-func-args-env)
+        local-vars (make-local-env)
+        res-vars   (make-resources-env resources)]
+    (merge args-vars local-vars res-vars)))
 
 (defn get-env-var
   [env id]

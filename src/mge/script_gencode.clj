@@ -23,9 +23,13 @@
 
 (declare load-arg)
 
+(defn- rnd-id?
+  [id]
+  (= (str/lower-case id) "rnd"))
+
 (defn- load-arg-id
   [env id]
-  (if (= (str/lower-case id) "rnd")
+  (if (rnd-id? id)
     [[:call u/random-word]]
     (if-let [v (env/get-env-var env id)]
       (let [i (:addr v)]
