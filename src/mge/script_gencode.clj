@@ -13,6 +13,7 @@
             [mge.engine-math :as m]
             [mge.engine-music :as music]
             [mge.engine-tilemap :as tilemap]
+            [mge.engine-hscroll :as hscr]
             [mge.engine-screens :as scr]
             [mge.engine-offscreen :as off]
             [mge.script-env :as env]))
@@ -351,23 +352,23 @@
    ;; attrs
    (set-konami5-page 3 (fn [] (:page (get-label attrs-id))))
    [:ld :ix attrs-id]
-   [:call tilemap/load-attrs]
+   [:call hscr/load-attrs]
    ;; map
    [:ld :a (fn [] (:page (get-label lines-id)))]
    [:ld :b (fn [] (:page (get-label map-id)))]
    [:ld :c (fn [] (:page (get-label types-id)))]
    [:ld :hl types-id]
    [:ld :ix map-id]
-   [:call tilemap/load-horizontal-map]
+   [:call hscr/load-horizontal-map]
    [:ei]])
 
 (defn scroll-right
   [env]
-  [[:call tilemap/scroll-right]])
+  [[:call hscr/scroll-right]])
 
 (defn scroll-left
   [env]
-  [[:call tilemap/scroll-left]])
+  [[:call hscr/scroll-left]])
 
 (defn screen-load
   [env init-id update-id]
