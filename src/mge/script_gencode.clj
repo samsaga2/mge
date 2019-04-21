@@ -244,22 +244,16 @@
     [:call music/play-sfx]]))
 
 (defn tilemap-load
-  [env patterns-id colors-id attrs-id lines-id map-id types-id]
+  [env attrs-id lines-id map-id types-id]
   [;; name
    [:call tilemap/clear-name]
    [:di]
-   ;; patterns
-   (set-konami5-page 3 (fn [] (:page (get-label patterns-id))))
-   [:ld :hl patterns-id]
-   [:call tilemap/load-patterns]
-   ;; colors
-   (set-konami5-page 3 (fn [] (:page (get-label colors-id))))
-   [:ld :hl colors-id]
-   [:call tilemap/load-colors]
+
    ;; attrs
    (set-konami5-page 3 (fn [] (:page (get-label attrs-id))))
    [:ld :ix attrs-id]
    [:call hscr/load-attrs]
+
    ;; map
    [:ld :a (fn [] (:page (get-label lines-id)))]
    [:ld :b (fn [] (:page (get-label map-id)))]

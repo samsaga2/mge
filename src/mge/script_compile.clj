@@ -59,8 +59,6 @@
          [:load "tilemap" [:str s]]
          (do (assert-res-exists env :tilemaps s)
              [(gc/tilemap-load env
-                               (make-tilemap-id s :pattern)
-                               (make-tilemap-id s :colors)
                                (make-tilemap-id s :attr)
                                (make-tilemap-id s :lines)
                                (make-tilemap-id s :map)

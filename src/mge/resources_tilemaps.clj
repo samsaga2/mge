@@ -14,31 +14,34 @@
 ;; tileset
 
 (defn- make-tileset-image
-  [tilemap filename]
+  [tilemap]
   (let [tileset-filename  (:tilemap tilemap)
         [colors patterns] (convert-screen2 tileset-filename :colors)
         patterns          (compress-lz77 patterns)
         colors            (compress-lz77 colors)
-        patterns-id       (make-tilemap-id filename :pattern)
-        colors-id         (make-tilemap-id filename :colors)]
-    (println "Compiled tilemap image" filename
+        tileset-pat-id    (make-tilemap-id tileset-filename :pattern)
+        tileset-col-id    (make-tilemap-id tileset-filename :colors)]
+    (println "Compiled tileset" tileset-filename
              (+ (count patterns) (count colors))
              "bytes")
-    (make-proc patterns-id res-pages [[:db patterns]])
-    (make-proc colors-id res-pages [[:db colors]])))
+    (make-proc tileset-pat-id res-pages [[:db patterns]])
+    (make-proc tileset-col-id res-pages [[:db colors]])
+    {:tileset-patterns tileset-pat-id
+     :tileset-colors   tileset-col-id}))
 
 
 ;; make tile types
 
 (defn- make-tileset-type
   [tilemap filename]
-  (let [types   (:tiletypes tilemap)
+  (let [types    (:tiletypes tilemap)
         id       (make-tilemap-id filename :types)]
-    (println "Compiled tilemap types" filename
+    (println "Compiled tileset types" filename
              (count types)
              "bytes")
-    (make-proc id res-pages
-               [[:db types]])))
+    (make-proc id res-pages [[:db types]])
+    {:tileset-types types}))
+
 
 ;; make horizontal tilemap
 
@@ -54,7 +57,7 @@
           (range w)))) 
 
 (defn- make-horizontal-tilemap
-  [tilemap filename]
+  [tilemap filename tileset]
   (let [w         (:width tilemap)
         h         (:height tilemap)
         cells     (:cells tilemap)
@@ -70,28 +73,41 @@
                         lines)]
     (assert (<= h 24))
     (assert (<= (* (count set-lines) h) 0x2000))
-    (println "Compiled tilemap cells" filename
+    (println "Compiled tilemap" filename
              (+ (* (count set-lines) h)
-                w))
-    (make-proc attr-id res-pages [(dw w h)])
+                (* w 2)
+                8))
+    (make-proc attr-id res-pages
+               [;; attrs
+                (dw w h)
+                ;; patterns
+                [:db (fn [] (:page (get-label (:tileset-patterns tileset))))]
+                (dw (:tileset-patterns tileset))
+                ;; colors
+                [:db (fn [] (:page (get-label (:tileset-colors tileset))))]
+                (dw (:tileset-colors tileset))])
     (make-proc lines-id res-pages [(apply db (apply concat set-lines))])
     (make-proc map-id res-pages [(apply dw map-lines)])))
 
 
 ;; core
 
+(defn- make-tileset
+  [tilemap filename]
+  ;; check tile size
+  (when-not (and (= 8 (:tile-width tilemap))
+                 (= 8 (:tile-height tilemap)))
+    (throw (Exception. (str "Tiles must be 8x8 pixels size"))))
+  ;; compile tile image
+  (merge (make-tileset-image tilemap)
+         (make-tileset-type tilemap filename)))
+
 (defn make-tilemap
   [file]
   (let [tilemap  (tiled/load-tilemap (.getPath file))
-        filename (.getName file)]
-    ;; check tile size
-    (when-not (and (= 8 (:tile-width tilemap))
-                   (= 8 (:tile-height tilemap)))
-      (throw (Exception. (str "Tiles must be 8x8 pixels size"))))
-    ;; compile tile image
-    (make-tileset-image tilemap filename)
-    (make-tileset-type tilemap filename)
+        filename (.getName file)
+        tileset  (make-tileset tilemap filename)]
     ;; compile tilemap
     (case (:direction tilemap)
-      "horizontal" (make-horizontal-tilemap tilemap filename)
+      "horizontal" (make-horizontal-tilemap tilemap filename tileset)
       (throw (Exception. "Unknown tilemap direction")))))

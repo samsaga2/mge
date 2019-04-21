@@ -1,21 +1,14 @@
 (ns mge.engine-hscroll
   (:require [clj-z80.asm :refer :all :refer-macros :all]
-            [clj-z80.msx.lib.bios :as bios]
-            [clj-z80.msx.lib.sysvars :as sysvars]
-            [clj-z80.msx.lib.uncompress :refer [uncompress-lz77-to-vram]]
             [clj-z80.msx.image :refer [set-konami5-page]]
             [mge.engine-offscreen :as off]
-            [mge.engine-tilemap :refer :all]
-            [mge.engine-math :as math]
-            [mge.engine-vdp :as vdp]))
-
+            [mge.engine-tilemap :as tilemap]))
 
 (defasmword tilemap-width)
 (defasmword tilemap-height)
 (defasmword tilemap-map)
 (defasmbyte page-lines)
 (defasmbyte page-types)
-
 
 (defasmproc load-attrs {:page :code}
   ;; ix=addr
@@ -27,7 +20,25 @@
   [:ld :l [:ix 2]]
   [:ld :h [:ix 3]]
   [:ld [tilemap-height] :hl]
-  [:ret])
+
+  ;; patterns
+  [:ld :a [:ix 4]] ;; pattern page
+  [:ld :l [:ix 5]] ;; pattern low byte address
+  [:ld :h [:ix 6]] ;; pattern high byte address
+  [:ld :c [:ix 7]] ;; color page
+  [:ld :e [:ix 8]] ;; color low byte address
+  [:ld :d [:ix 9]] ;; color high byte address
+  [:push :bc]
+  [:push :de]
+  (set-konami5-page 3 :a)
+  [:call tilemap/load-patterns]
+
+  ;; colors
+  [:pop :hl]
+  [:pop :bc]
+  [:ld :a :c]
+  (set-konami5-page 3 :a)
+  [:jp tilemap/load-colors])
 
 
 ;; horizontal scroll
@@ -53,7 +64,7 @@
          [:push :bc]
 
          ;; get line addr
-         (set-konami5-page 3 [page-map])
+         (set-konami5-page 3 [tilemap/page-map])
          [:ld :e [:iy 0]]
          [:ld :d [:iy 1]]
          [:inc :iy]
@@ -86,12 +97,12 @@
   ;; save pages
   [:ld [page-lines] :a]
   [:ld :a :b]
-  [:ld [page-map] :a]
+  [:ld [tilemap/page-map] :a]
   [:ld :a :c]
   [:ld [page-types] :a]
 
   ;; save types addr
-  [:ld [tilemap-types] :hl]
+  [:ld [tilemap/tilemap-types] :hl]
 
   ;; save map addr
   [:ld :a :ixl]
