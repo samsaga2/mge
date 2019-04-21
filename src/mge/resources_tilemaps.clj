@@ -15,17 +15,17 @@
 
 (defn- make-tileset-image
   [tilemap filename]
-  (let [image-source      (:tilemap tilemap)
-        [colors patterns] (convert-screen2 image-source :colors)
+  (let [tileset-filename  (:tilemap tilemap)
+        [colors patterns] (convert-screen2 tileset-filename :colors)
         patterns          (compress-lz77 patterns)
-        colors            (compress-lz77 colors)]
+        colors            (compress-lz77 colors)
+        patterns-id       (make-tilemap-id filename :pattern)
+        colors-id         (make-tilemap-id filename :colors)]
     (println "Compiled tilemap image" filename
              (+ (count patterns) (count colors))
              "bytes")
-    (make-proc (make-tilemap-id filename :pattern) res-pages
-               [[:db patterns]])
-    (make-proc (make-tilemap-id filename :colors) res-pages
-               [[:db colors]])))
+    (make-proc patterns-id res-pages [[:db patterns]])
+    (make-proc colors-id res-pages [[:db colors]])))
 
 
 ;; make tile types
@@ -81,9 +81,9 @@
 ;; core
 
 (defn make-tilemap
-  [filename]
-  (let [tilemap  (tiled/load-tilemap filename)
-        filename (.getName (io/file filename))]
+  [file]
+  (let [tilemap  (tiled/load-tilemap (.getPath file))
+        filename (.getName file)]
     ;; check tile size
     (when-not (and (= 8 (:tile-width tilemap))
                    (= 8 (:tile-height tilemap)))

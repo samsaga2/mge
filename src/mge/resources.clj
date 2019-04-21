@@ -15,29 +15,28 @@
 
 (def script-pages [0 1 2])
 (def res-pages (vec (range 4 64)))
-(def ^:dynamic game-folder "game")
 
 
 ;; files
 
 (defn- list-files
-  [path extension]
-  (->> (io/file game-folder path)
+  [working-dir path extension]
+  (->> (io/file working-dir path)
        file-seq
        (filter #(.isFile %))
        (filter #(str/ends-with? (str/lower-case %) extension))
        doall))
 
 (defn collect-resources
-  []
-  {:sprites  (list-files "res/sprites" ".png")
-   :screen-scripts (list-files "scripts/screens" ".mge")
-   :sprite-scripts (list-files "scripts/sprites" ".mge")
-   :animation-scripts (list-files "scripts/animations" ".mge")
-   :titles (list-files "res/titles" ".png")
-   :musics (list-files "res/music" ".pt3")
-   :sfx (list-files "res/sfx" ".afb")
-   :tilemaps (list-files "res/tilemaps" ".tmx")})
+  [game-folder]
+  {:sprites           (list-files game-folder "res/sprites" ".png")
+   :screen-scripts    (list-files game-folder "scripts/screens" ".mge")
+   :sprite-scripts    (list-files game-folder "scripts/sprites" ".mge")
+   :animation-scripts (list-files game-folder "scripts/animations" ".mge")
+   :titles            (list-files game-folder "res/titles" ".png")
+   :musics            (list-files game-folder "res/music" ".pt3")
+   :sfx               (list-files game-folder "res/sfx" ".afb")
+   :tilemaps          (list-files game-folder "res/tilemaps" ".tmx")})
 
 
 ;; sprites
@@ -193,34 +192,33 @@
 (defn- make-tilemaps
   [files]
   (doseq [file files]
-    (make-tilemap (.getPath file))))
+    (make-tilemap file)))
 
 
 ;; core
 
 (defn compile-resources
-  [asm-file current-game-folder]
+  [asm-file game-folder]
   ;; truncate asm file
   (when asm-file
     (spit asm-file ""))
-  (binding [game-folder current-game-folder]
-    (let [resources (collect-resources)]
-      ;; convert resources
-      (-> :sprites resources make-sprites)
-      (-> :titles resources make-titles)
-      (-> :musics resources make-music)
-      (-> :sfx resources make-sfx)
-      (-> :tilemaps resources make-tilemaps)
-      ;; compile scripts
-      (-> :screen-scripts
-          resources
-          (compile-screen-scripts resources)
-          (make-scripts asm-file))
-      (-> :sprite-scripts
-          resources
-          (compile-sprite-scripts resources)
-          (make-scripts asm-file))
-      (-> :animation-scripts
-          resources
-          (compile-animation-scripts resources)
-          (make-scripts asm-file)))))
+  (let [resources (collect-resources game-folder)]
+    ;; convert resources
+    (-> :sprites resources make-sprites)
+    (-> :titles resources make-titles)
+    (-> :musics resources make-music)
+    (-> :sfx resources make-sfx)
+    (-> :tilemaps resources make-tilemaps)
+    ;; compile scripts
+    (-> :screen-scripts
+        resources
+        (compile-screen-scripts resources)
+        (make-scripts asm-file))
+    (-> :sprite-scripts
+        resources
+        (compile-sprite-scripts resources)
+        (make-scripts asm-file))
+    (-> :animation-scripts
+        resources
+        (compile-animation-scripts resources)
+        (make-scripts asm-file))))
